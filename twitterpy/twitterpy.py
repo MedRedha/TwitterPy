@@ -3,6 +3,7 @@ import logging
 import os
 import random
 from sys import exit as clean_exit
+from math import ceil
 
 from .login_util import login_user
 from .settings import Settings
@@ -21,6 +22,7 @@ from socialcommons.util import parse_cli_args
 from socialcommons.util import interruption_handler
 from socialcommons.util import highlight_print
 from socialcommons.util import truncate_float
+from socialcommons.util import web_address_navigator
 
 from socialcommons.time_util import sleep
 
@@ -30,6 +32,8 @@ from socialcommons.file_manager import get_logfolder
 from socialcommons.browser import set_selenium_local_session
 
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.action_chains import ActionChains
+
 from socialcommons.exceptions import SocialPyError
 
 class TwitterPy:
@@ -265,8 +269,8 @@ class TwitterPy:
                           randomize=False,
                           media=None):
         """Define if posts of given user should be interacted"""
-        if self.aborting:
-            return self
+        # if self.aborting:
+        #     return self
 
         self.user_interact_amount = amount
         self.user_interact_random = randomize
@@ -375,6 +379,48 @@ class TwitterPy:
     #     sleep(naply)
 
     #     return True, "success"
+
+    def follow_user_followers(self, users, amount, 
+              sleep_delay=6):
+        for user in users:
+            web_address_navigator(self.browser, "https://twitter.com/" + user + "/followers", Settings)
+            self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            delay_random = random.randint(
+                        ceil(sleep_delay * 0.85),
+                        ceil(sleep_delay * 1.14))
+            sleep(delay_random)
+            # self.browser.execute_script("window.scrollTo(0, 70);")
+
+            rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
+            print(len(rows))
+            for jc, row in enumerate(rows):
+                try:
+                    profilelink = row.find_element_by_css_selector("div > a")
+                    button = row.find_element_by_css_selector("div > div > div > div > span > span")
+                    print(profilelink.get_attribute("href"))
+                    if button.text=='Follow':
+                        print('clicking', button.text)
+                        (ActionChains(self.browser)
+                         .move_to_element(self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[jc].find_element_by_css_selector("div > div > div > div > span > span"))
+                         .perform())
+                        delay_random = random.randint(
+                                    ceil(sleep_delay * 0.85),
+                                    ceil(sleep_delay * 1.14))
+                        sleep(delay_random)
+
+                        (ActionChains(self.browser)
+                         .click()
+                         .perform())
+                        print('clicked to', self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[jc].find_element_by_css_selector("div > div > div > div > span > span").text)
+                        delay_random = random.randint(
+                                    ceil(sleep_delay * 0.85),
+                                    ceil(sleep_delay * 1.14))
+                        sleep(delay_random)
+                    else:
+                        print('already', button.text)
+                    self.browser.execute_script("window.scrollTo(0, " + str(jc+1) + "*70);")
+                except Exception as e:
+                    print(e)
 
     def follow_by_list(self, followlist, times=1, sleep_delay=600,
                        interact=False):

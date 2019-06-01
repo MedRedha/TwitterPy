@@ -17,7 +17,7 @@ session = TwitterPy()
 with smart_run(session):
     """ Activity flow """
     # # general settings
-    session.set_dont_include(["friend1", "friend2", "friend3"])
+    # session.set_dont_include(["friend1", "friend2", "friend3"])
 
     # activity
     # session.like_by_tags(["natgeo"], amount=10)
@@ -35,10 +35,6 @@ with smart_run(session):
                               media='Photo')
     # session.set_do_like(enabled=True, percentage=90)
     session.set_do_follow(enabled=True, percentage=40, times=1)
-
-    """ Select users form a list of a predefined targets...
-    """
-
     targets = ['XHNews', 'Arsenal', 'BarackObama', 'TheEllenShow']
     number = random.randint(3, 5)
     random_targets = targets
@@ -48,12 +44,10 @@ with smart_run(session):
     else:
         random_targets = random.sample(targets, number)
 
-    # session.follow_by_list(followlist=random_targets, times=1, sleep_delay=600, interact=False)
+    session.follow_by_list(followlist=random_targets, times=1, sleep_delay=600, interact=False)
 
-    # session.follow_user_followers(random_targets,
-    #                               amount=random.randint(30, 60),
-    #                               randomize=True, sleep_delay=600,
-    #                               interact=True)
+    session.follow_user_followers(random_targets,
+                                  amount=random.randint(30, 60))
 
     # session.follow_likers(random_targets, photos_grab_amount = 2, follow_likers_per_photo = 3, randomize=True, sleep_delay=600, interact=False)
 
