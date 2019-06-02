@@ -47,7 +47,8 @@ class TwitterPy:
                  show_logs=True,
                  headless_browser=False,
                  disable_image_load=False,
-                 multi_logs=True):
+                 multi_logs=True,
+                 use_firefox=False):
 
         cli_args = parse_cli_args()
         username = cli_args.username or username
@@ -64,6 +65,7 @@ class TwitterPy:
 
         self.browser = None
         self.headless_browser = headless_browser
+        self.use_firefox = use_firefox
         self.selenium_local_session = selenium_local_session
         self.disable_image_load = disable_image_load
 
@@ -160,7 +162,7 @@ class TwitterPy:
                                        None,
                                        None,
                                        self.headless_browser,
-                                       False,
+                                       self.use_firefox,
                                        self.browser_profile_path,
                                        # Replaces
                                        # browser User
@@ -377,29 +379,31 @@ class TwitterPy:
     #     # get the post-follow delay time to sleep
     #     naply = get_action_delay("follow", Settings)
     #     sleep(naply)
-
     #     return True, "success"
 
-    def follow_user_followers(self, users, amount, 
-              sleep_delay=6):
+    def follow_user_followers(self, users, amount, sleep_delay=6):
+        failed = 0
         for user in users:
             web_address_navigator(self.browser, "https://twitter.com/" + user + "/followers", Settings)
-            self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            delay_random = random.randint(
-                        ceil(sleep_delay * 0.85),
-                        ceil(sleep_delay * 1.14))
-            sleep(delay_random)
-            # self.browser.execute_script("window.scrollTo(0, 70);")
+            rows = []
+            while len(rows) < 10:
+                self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                delay_random = random.randint(
+                            ceil(sleep_delay * 0.85),
+                            ceil(sleep_delay * 1.14))
+                sleep(delay_random)
+                rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
+                print(len(rows))
 
-            rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
-            print(len(rows))
             for jc, row in enumerate(rows):
                 try:
                     profilelink = row.find_element_by_css_selector("div > a")
                     button = row.find_element_by_css_selector("div > div > div > div > span > span")
                     print(profilelink.get_attribute("href"))
                     if button.text=='Follow':
-                        print('clicking', button.text)
+                        print('Clicking', button.text)
+                        button_old_text = button.text
+
                         (ActionChains(self.browser)
                          .move_to_element(self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[jc].find_element_by_css_selector("div > div > div > div > span > span"))
                          .perform())
@@ -411,16 +415,27 @@ class TwitterPy:
                         (ActionChains(self.browser)
                          .click()
                          .perform())
-                        print('clicked to', self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[jc].find_element_by_css_selector("div > div > div > div > span > span").text)
                         delay_random = random.randint(
                                     ceil(sleep_delay * 0.85),
                                     ceil(sleep_delay * 1.14))
                         sleep(delay_random)
+
+                        if button_old_text == self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[jc].find_element_by_css_selector("div > div > div > div > span > span").text:
+                            failed = failed + 1
+                            print('Failed {} times'.format(failed))
+                        else:
+                            print('Button changed to', self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[jc].find_element_by_css_selector("div > div > div > div > span > span").text)
                     else:
-                        print('already', button.text)
+                        print('Already', button.text)
                     self.browser.execute_script("window.scrollTo(0, " + str(jc+1) + "*70);")
+                    if failed >= 3:
+                        return
                 except Exception as e:
                     print(e)
+                    delay_random = random.randint(
+                                ceil(sleep_delay * 0.85),
+                                ceil(sleep_delay * 1.14))
+                    sleep(delay_random)
 
     def follow_by_list(self, followlist, times=1, sleep_delay=600,
                        interact=False):
