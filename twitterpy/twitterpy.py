@@ -440,8 +440,8 @@ class TwitterPy:
                 except Exception as e:
                     print(e)
                     if ('The element reference of' in str(e) or 'is out of bounds of viewport' in str(e) or 'Web element reference not seen before' in str(e)):
-                        break
                         print('Breaking')
+                        break
                     else:
                         failed = failed + 1
                         print('Failed {} times'.format(failed))
