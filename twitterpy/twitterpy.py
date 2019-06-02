@@ -386,6 +386,7 @@ class TwitterPy:
         for user in users:
             web_address_navigator(self.browser, "https://twitter.com/" + user + "/followers", Settings)
             rows = []
+            print('Browsing followers of', user)
             while len(rows) < 10:
                 self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 delay_random = random.randint(
