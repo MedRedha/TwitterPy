@@ -10,13 +10,24 @@ from socialcommons.util import update_activity
 from socialcommons.util import web_address_navigator
 from socialcommons.util import reload_webpage
 from socialcommons.util import click_element
-from socialcommons.util import check_authorization
 from .settings import Settings
 
 # import exceptions
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import WebDriverException
 
+def check_authorization(browser, Settings, base_url, username, userid, method, logger, logfolder, notify=True):
+    """ Check if user is NOW logged in """
+    if notify is True:
+        logger.info("Checking if '{}' is logged in...".format(username))
+    navs = browser.find_elements_by_xpath('//div/div/div/header/div/div/div/div[1]/div[2]/nav')
+
+    if len(navs) >= 1:
+        # create cookie for username
+        pickle.dump(browser.get_cookies(), open(
+            '{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
+        return True
+    return False
 
 def login_user(browser,
                username,
@@ -30,16 +41,16 @@ def login_user(browser,
     print(username, password)
     ig_homepage = "https://www.twitter.com/login"
     web_address_navigator(browser, ig_homepage, Settings)
-    # cookie_loaded = False
+    cookie_loaded = False
 
     # try to load cookie from username
-    # try:
-    #     for cookie in pickle.load(open('{0}{1}_cookie.pkl'
-    #                                    .format(logfolder, username), 'rb')):
-    #         browser.add_cookie(cookie)
-    #         cookie_loaded = True
-    # except (WebDriverException, OSError, IOError):
-    #     print("Cookie file not found, creating cookie...")
+    try:
+        for cookie in pickle.load(open('{0}{1}_cookie.pkl'
+                                       .format(logfolder, username), 'rb')):
+            browser.add_cookie(cookie)
+            cookie_loaded = True
+    except (WebDriverException, OSError, IOError):
+        print("Cookie file not found, creating cookie...")
 
     # include time.sleep(1) to prevent getting stuck on google.com
     time.sleep(1)
@@ -51,8 +62,8 @@ def login_user(browser,
     #         if link.get_attribute('title') == "English (UK)":
     #             click_element(browser, Settings, link)
 
-    # web_address_navigator(browser, ig_homepage, Settings)
-    # reload_webpage(browser, Settings)
+    web_address_navigator(browser, ig_homepage, Settings)
+    reload_webpage(browser, Settings)
 
     # cookie has been LOADED, so the user SHOULD be logged in
     # check if the user IS logged in
@@ -71,9 +82,9 @@ def login_user(browser,
 
     # if user is still not logged in, then there is an issue with the cookie
     # so go create a new cookie..
-    # if cookie_loaded:
-    #     print("Issue with cookie for user {}. Creating "
-    #           "new cookie...".format(username))
+    if cookie_loaded:
+        print("Issue with cookie for user {}. Creating "
+              "new cookie...".format(username))
 
     input_username_XP = '//*[@id="page-container"]/div/div[1]/form/fieldset/div[1]/input'
     input_username = browser.find_element_by_xpath(input_username_XP)

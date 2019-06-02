@@ -382,6 +382,7 @@ class TwitterPy:
     #     return True, "success"
 
     def follow_user_followers(self, users, amount, sleep_delay=6):
+        followed = 0
         failed = 0
         for user in users:
             web_address_navigator(self.browser, "https://twitter.com/" + user + "/followers", Settings)
@@ -425,6 +426,7 @@ class TwitterPy:
                             failed = failed + 1
                             print('Failed {} times'.format(failed))
                         else:
+                            followed = followed + 1
                             print('Button changed to', self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[jc].find_element_by_css_selector("div > div > div > div > span > span").text)
                     else:
                         print('Already', button.text)
@@ -437,6 +439,7 @@ class TwitterPy:
                                 ceil(sleep_delay * 0.85),
                                 ceil(sleep_delay * 1.14))
                     sleep(delay_random)
+            print('followed in this iteration till now:', followed)
 
     def follow_by_list(self, followlist, times=1, sleep_delay=600,
                        interact=False):
