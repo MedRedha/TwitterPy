@@ -41,6 +41,7 @@ class TwitterPy:
     def __init__(self,
                  username=None,
                  password=None,
+                 email=None,
                  selenium_local_session=True,
                  browser_profile_path=None,
                  page_delay=25,
@@ -53,6 +54,7 @@ class TwitterPy:
         cli_args = parse_cli_args()
         username = cli_args.username or username
         password = cli_args.password or password
+        email = cli_args.email or email
         page_delay = cli_args.page_delay or page_delay
         headless_browser = cli_args.headless_browser or headless_browser
         disable_image_load = cli_args.disable_image_load or disable_image_load
@@ -71,6 +73,7 @@ class TwitterPy:
 
         self.username = username or os.environ.get('TWITTER_USER')
         self.password = password or os.environ.get('TWITTER_PW')
+        self.email = email or os.environ.get('TWITTER_EMAIL')
 
         Settings.profile["name"] = self.username
         self.browser_profile_path = browser_profile_path
@@ -180,6 +183,7 @@ class TwitterPy:
         if not login_user(self.browser,
                           self.username,
                           self.password,
+                          self.email,
                           self.logger,
                           self.logfolder):
             message = "Wrong login data!"

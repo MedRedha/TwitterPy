@@ -10,6 +10,7 @@ from socialcommons.util import update_activity
 from socialcommons.util import web_address_navigator
 from socialcommons.util import reload_webpage
 from socialcommons.util import click_element
+from socialcommons.util import explicit_wait
 from .settings import Settings
 
 # import exceptions
@@ -32,6 +33,7 @@ def check_authorization(browser, Settings, base_url, username, userid, method, l
 def login_user(browser,
                username,
                password,
+               email,
                logger,
                logfolder):
     """Logins the user with the given username and password"""
@@ -65,36 +67,38 @@ def login_user(browser,
     web_address_navigator(browser, ig_homepage, Settings)
     reload_webpage(browser, Settings)
 
-    # cookie has been LOADED, so the user SHOULD be logged in
-    # check if the user IS logged in
-    login_state = check_authorization(browser, Settings,
-                                    "https://www.twitter.com/login",
-                                    username,
-                                    None,
-                                    "activity counts",
-                                    logger,
-                                    logfolder,
-                                    True)
-    print('check_authorization:', login_state)
-    if login_state is True:
-        # dismiss_notification_offer(browser, logger)
-        return True
-
     # if user is still not logged in, then there is an issue with the cookie
     # so go create a new cookie..
+
+    # cookie has been LOADED, so the user SHOULD be logged in
+    # check if the user IS logged in
     if cookie_loaded:
-        print("Issue with cookie for user {}. Creating "
-              "new cookie...".format(username))
+        login_state = check_authorization(browser, Settings,
+                                        "https://www.twitter.com/login",
+                                        username,
+                                        None,
+                                        "activity counts",
+                                        logger,
+                                        logfolder,
+                                        True)
+        print('check_authorization:', login_state)
+        if login_state is True:
+            # dismiss_notification_offer(browser, logger)
+            return True
+        else:
+            print("Issue with cookie for user {}. Creating "
+                  "new cookie...".format(username))
 
     input_username_XP = '//*[@id="page-container"]/div/div[1]/form/fieldset/div[1]/input'
     input_username = browser.find_element_by_xpath(input_username_XP)
 
     print('moving to input_username')
     print('entering input_username')
+    #email login doesn't reprompt
     (ActionChains(browser)
      .move_to_element(input_username)
      .click()
-     .send_keys(username)
+     .send_keys(email)
      .perform())
 
     # update server calls for both 'click' and 'send_keys' actions
@@ -142,16 +146,30 @@ def login_user(browser,
     #     bypass_suspicious_login(browser, bypass_with_mobile)
 
     # wait until page fully load
-    # explicit_wait(browser, "PFL", [], logger, 5)
+    explicit_wait(browser, "PFL", [], logger, 5)
 
     # Check if user is logged-in (If there's two 'nav' elements)
-    navs = browser.find_elements_by_xpath('//div/div/div/header/div/div/div/div[1]/div[2]/nav')
+    login_state = check_authorization(browser, Settings,
+                                    "https://www.twitter.com/login",
+                                    username,
+                                    None,
+                                    "activity counts",
+                                    logger,
+                                    logfolder,
+                                    True)
+    print('check_authorization again:', login_state)
+    return login_state
+    # if login_state is True:
+    # navs = browser.find_elements_by_xpath('//div/div/div/header/div/div/div/div[1]/div[2]/nav')
 
-    if len(navs) >= 1:
-        # create cookie for username
-        print('Logged in')
-        pickle.dump(browser.get_cookies(), open(
-            '{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
-        return True
-    else:
-        return False
+    # if len(navs) >= 1:
+    #     # create cookie for username
+    #     print('Logged in')
+    #     pickle.dump(browser.get_cookies(), open(
+    #         '{0}{1}_cookie.pkl'.format(logfolder, username), 'wb'))
+    #     return True
+    # else:
+    #     return False
+
+
+

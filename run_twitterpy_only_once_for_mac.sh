@@ -7,7 +7,8 @@
 TEMPLATE_PATH=$1
 USERNAME=$2
 PASSWORD=$3
-if [ -z "$3" ]
+EMAIL=$4
+if [ -z "$4" ]
 then
    echo "Error: Missing arguments"
    echo "Usage: bash $0 <script-path> <username> <password>"
@@ -19,6 +20,6 @@ then
    echo "$TEMPLATE_PATH is already running"
 else
    echo "Starting $TEMPLATE_PATH"
-   # /Users/ishandutta2007/.pyenv/shims/python $TEMPLATE_PATH -u $USERNAME -p $PASSWORD --disable_image_load
-   /Users/ishandutta2007/.pyenv/shims/python $TEMPLATE_PATH -u $USERNAME -p $PASSWORD --headless-browser --disable_image_load
+   # /Users/ishandutta2007/.pyenv/shims/python $TEMPLATE_PATH -u $USERNAME -p $PASSWORD -e $EMAIL --disable_image_load
+   /Users/ishandutta2007/.pyenv/shims/python $TEMPLATE_PATH -u $USERNAME -p $PASSWORD -e $EMAIL --headless-browser --disable_image_load
 fi
