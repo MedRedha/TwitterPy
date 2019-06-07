@@ -22,6 +22,7 @@ from socialcommons.util import parse_cli_args
 from socialcommons.util import interruption_handler
 from socialcommons.util import highlight_print
 from socialcommons.util import truncate_float
+from socialcommons.util import format_number
 from socialcommons.util import web_address_navigator
 
 from socialcommons.time_util import sleep
@@ -387,6 +388,12 @@ class TwitterPy:
     #     sleep(naply)
     #     return True, "success"
 
+    def get_relationship_counts(self):
+        web_address_navigator(self.browser, "https://twitter.com/" + self.username, Settings)
+        followers = self.browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div:nth-child(1) > div > div:nth-child(5) > div:nth-child(2) > a > span > span")
+        following = self.browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div:nth-child(1) > div > div:nth-child(5) > div:nth-child(1) > a > span > span")
+        return format_number(followers.text), format_number(following.text)
+
     def unfollow_all(self, amount=100, sleep_delay=2):
         unfollowed = 0
         failed = 0
@@ -458,8 +465,8 @@ class TwitterPy:
             except Exception as e:
                 print(e)
                 if ('The element reference of' in str(e) or 'is out of bounds of viewport' in str(e) or 'Web element reference not seen before' in str(e)):
-                    print('Breaking')
-                    break
+                    print('Returning')
+                    return
                 else:
                     failed = failed + 1
                     print('Failed {} times'.format(failed))
@@ -468,6 +475,7 @@ class TwitterPy:
                             ceil(sleep_delay * 1.14))
                 sleep(delay_random)
             if failed >= 6:
+                print('Returning')
                 return
             print('unfollowed in this iteration till now:', unfollowed)
 
@@ -535,6 +543,7 @@ class TwitterPy:
                     sleep(delay_random)
                 self.browser.execute_script("window.scrollTo(0, " + str((jc+1)*ROW_HEIGHT) + ");")
                 if failed >= 6:
+                    print('Returning')
                     return
             print('followed in this iteration till now:', followed)
 

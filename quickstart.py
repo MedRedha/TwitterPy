@@ -34,7 +34,7 @@ with smart_run(session):
     # session.set_do_like(enabled=True, percentage=90)
     session.set_do_follow(enabled=True, percentage=40, times=1)
     targets = [ 'Allroundraja', 'CFCricket_World', 'D11_Devill10', 'Dream11Hockey', 'Dream11PKL', 'Dream11Players', 'Dream11Tips2', 'Dream11_Expert', 'Dream11_FCG', 'Dream11Help1', 'Dream11pundit', 'DreamerFantasy7', 'Fantasy_Guruu', 'GuruDream11', 'Haiwaaaan', 'HalaPlayDotCom', 'HARMAN055_', 'IAMSANTIY224', 'IPLExpart', 'I_am_RN_', 'LeagueAdda', 'LeagueXofficial', 'MGSDREAM11', 'MyTeam_11', 'Mr360j', 'NarayananXi', 'NBAspecialist21', 'Patelvikesh664', 'PlayerzPot', 'PlayMPL', 'PredictKar', 'Royal_D11Family', 'Royalgoyal23', 'TFGfantasySport', 'WizardlyChamp', 'ballebaazi', 'cricket_dream', 'cricketgeekhere', 'cricpick', 'ddguruji', 'dream11', 'dream11champ321', 'dream11cricinfa', 'dream11sj', 'fantasykfcdream', 'fantasypower11', 'fcnupdates', 'imnandhancric', 'kingaadarsh2', 'lfcsrk', 'lootnook', 'mohitsh229', 'peeyushsharmaa', 'shivakanaujia11', 'tips_dream11', 'winner_dream11' ]
-    number = random.randint(6, 9)
+    number = random.randint(2, 3)
     random_targets = targets
 
     if len(targets) <= number:
@@ -42,12 +42,14 @@ with smart_run(session):
     else:
         random_targets = random.sample(targets, number)
 
-    if random.randint(0, 10) >= 8:
-        session.unfollow_all(amount=random.randint(60, 90))
+    followers, following = session.get_relationship_counts()
 
-    session.follow_by_list(followlist=random_targets, times=1, sleep_delay=600, interact=False)
+    if 5*followers < following:
+        session.unfollow_all(amount=max(int(0.9*following), random.randint(40, 60)))
 
-    session.follow_user_followers(random_targets, amount=random.randint(30, 60))
+    # session.follow_by_list(followlist=random_targets, times=1, sleep_delay=600, interact=False)
+
+    session.follow_user_followers(random_targets, amount=random.randint(10, 30))
 
     # session.follow_likers(random_targets, photos_grab_amount = 2, follow_likers_per_photo = 3, randomize=True, sleep_delay=600, interact=False)
 
