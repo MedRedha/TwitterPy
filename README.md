@@ -13,8 +13,9 @@ pip install -r requirements.txt
 ```
 
 ##  APIs:
-  - [Follow usernames given by a list]
-  - [Follow followers of each of the users from a list]
+  - [Follow usernames given by a list](#Follow-usernames-given-by-a-list)
+  - [Follow followers of each of the users from a list](#Follow-followers-of-each-of-the-users-from-a-list)
+  - [Unfollow all](#Unfollow-all)
 
 ### Follow usernames given by a list
  
@@ -38,6 +39,16 @@ pip install -r requirements.txt
  with smart_run(session):
      session.follow_user_followers(my_users_list,
                                   amount=random.randint(30, 60))
+ ```
+ 
+### Unfollow all
+
+```python
+
+ session = TwitterPy()
+
+ with smart_run(session):
+     session.unfollow_all(amount=random.randint(30, 60))
  ```
  
 ## How to run:
