@@ -1,4 +1,4 @@
-# LinkedinPy
+# TwitterPy
 
 
 ## Installation:
