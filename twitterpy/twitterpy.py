@@ -400,27 +400,36 @@ class TwitterPy:
         web_address_navigator(self.browser, "https://twitter.com/" + self.username + "/following", Settings)
         rows = []
         print('Browsing followings of', self.username)
-        while len(rows) < 10:
+        delay_random = random.randint(
+                    ceil(sleep_delay * 0.85),
+                    ceil(sleep_delay * 1.14))
+
+        while len(rows) < 20:
             self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            delay_random = random.randint(
-                        ceil(sleep_delay * 0.85),
-                        ceil(sleep_delay * 1.14))
             sleep(delay_random)
             rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
-            print(len(rows))
+            print(len(rows), "rows navigated")
             self.browser.execute_script("window.scrollTo(0, 0);")
 
-        for jc, row in enumerate(rows):
+        sleep(delay_random)
+        rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
+        print(len(rows), "rows to be enumerated")
+        self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        sleep(delay_random)
+
+        for i in range(0, len(rows)):
             try:
-                profilelink = row.find_element_by_css_selector("div > a")
-                button = row.find_element_by_css_selector("div > div > div > div > span > span")
-                print(profilelink.get_attribute("href"))
+                self.browser.execute_script("window.scrollTo(0, " + str(80*i) + ");")
+                sleep(delay_random)
+                profilelink = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > a")
+                print(i, "About to unfollow =>", profilelink.get_attribute("href"))
+                button = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span")
                 if button.text=='Following':
                     print('Clicking', button.text)
                     button_old_text = button.text
 
                     (ActionChains(self.browser)
-                     .move_to_element(self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[jc].find_element_by_css_selector("div > div > div > div > span > span"))
+                     .move_to_element(self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span"))
                      .perform())
                     delay_random = random.randint(
                                 ceil(sleep_delay * 0.85),
@@ -452,12 +461,12 @@ class TwitterPy:
                                 ceil(sleep_delay * 1.14))
                     sleep(delay_random)
 
-                    if button_old_text == self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[jc].find_element_by_css_selector("div > div > div > div > span > span").text:
+                    if button_old_text == self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text:
                         failed = failed + 1
                         print('Failed {} times'.format(failed))
                     else:
                         unfollowed = unfollowed + 1
-                        print('Button changed to', self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[jc].find_element_by_css_selector("div > div > div > div > span > span").text)
+                        print('Button changed to', self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text)
                 else:
                     print('Already', button.text)
                 if unfollowed > amount:
@@ -506,7 +515,7 @@ class TwitterPy:
                         button_old_text = button.text
 
                         (ActionChains(self.browser)
-                         .move_to_element(self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[jc].find_element_by_css_selector("div > div > div > div > span > span"))
+                         .move_to_element(self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span"))
                          .perform())
                         delay_random = random.randint(
                                     ceil(sleep_delay * 0.85),
@@ -521,12 +530,12 @@ class TwitterPy:
                                     ceil(sleep_delay * 1.14))
                         sleep(delay_random)
 
-                        if button_old_text == self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[jc].find_element_by_css_selector("div > div > div > div > span > span").text:
+                        if button_old_text == self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text:
                             failed = failed + 1
                             print('Failed {} times'.format(failed))
                         else:
                             followed = followed + 1
-                            print('Button changed to', self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[jc].find_element_by_css_selector("div > div > div > div > span > span").text)
+                            print('Button changed to', self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text)
                     else:
                         print('Already', button.text)
                 except Exception as e:
@@ -541,7 +550,7 @@ class TwitterPy:
                                 ceil(sleep_delay * 0.85),
                                 ceil(sleep_delay * 1.14))
                     sleep(delay_random)
-                self.browser.execute_script("window.scrollTo(0, " + str((jc+1)*ROW_HEIGHT) + ");")
+                self.browser.execute_script("window.scrollTo(0, " + str((i+1)*ROW_HEIGHT) + ");")
                 if failed >= 6:
                     print('Returning')
                     return
