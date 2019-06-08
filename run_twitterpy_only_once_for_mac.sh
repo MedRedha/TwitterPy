@@ -2,7 +2,7 @@
 
 # This is a script to mitigate possibility of multiple parallel cron jobs being triggered(discussed here: https://github.com/timgrossmann/InstaPy/issues/1235)
 # The following is an example of a cron scheduled every 10 mins
-# */10 * * * * bash /path/to/LinkedinPy/run_linkedinpy_only_once_for_mac.sh /path/to/LinkedinPy/quickstart.py $USERNAME $PASSWORD
+# */10 * * * * bash /path/to/TwitterPy/run_linkedinpy_only_once_for_mac.sh /path/to/TwitterPy/quickstart.py $USERNAME $PASSWORD
 
 TEMPLATE_PATH=$1
 USERNAME=$2
