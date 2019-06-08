@@ -197,9 +197,9 @@ def get_following_status(browser, track, username, person, person_id, logger,
 # [3]/div/div[2]/div[2]/div/div[2]/div/div/ul/li[5]
     follow_button_XP = ('//*[@id="page-container"]/div/div/ul/li/div/div/span/button[@type="button"]/span[text()="Follow"]')
     failure_msg = "--> Unable to detect the following status of '{}'!"
-    user_inaccessible_msg = (
-        "Couldn't access the profile page of '{}'!\t~might have changed the"
-        " username".format(person))
+    # user_inaccessible_msg = (
+    #     "Couldn't access the profile page of '{}'!\t~might have changed the"
+    #     " username".format(person))
 
     # check if the page is available
     # valid_page = is_page_available(browser, logger, Settings)

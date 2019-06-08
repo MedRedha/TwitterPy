@@ -28,7 +28,7 @@ from socialcommons.util import web_address_navigator
 from socialcommons.time_util import sleep
 
 from socialcommons.browser import close_browser
-from socialcommons.file_manager import get_workspace
+# from socialcommons.file_manager import get_workspace
 from socialcommons.file_manager import get_logfolder
 from socialcommons.browser import set_selenium_local_session
 
@@ -62,11 +62,11 @@ class TwitterPy:
         headless_browser = cli_args.headless_browser or headless_browser
         disable_image_load = cli_args.disable_image_load or disable_image_load
 
-        TWITTERPY_IS_RUNNING = True
+        # TWITTERPY_IS_RUNNING = True
         # workspace must be ready before anything
-        if not get_workspace(Settings):
-            raise SocialPyError(
-                "Oh no! I don't have a workspace to work at :'(")
+        # if not get_workspace(Settings):
+        #     raise SocialPyError(
+        #         "Oh no! I don't have a workspace to work at :'(")
 
         self.browser = None
         self.headless_browser = headless_browser
@@ -84,33 +84,33 @@ class TwitterPy:
         self.page_delay = page_delay
         # self.switch_language = True
         self.followed = 0
-        self.already_followed = 0
+        # self.already_followed = 0
         self.followed_by = 0
         self.following_num = 0
 
         self.follow_times = 1
         self.do_follow = False
-        self.follow_percentage = 0
+        # self.follow_percentage = 0
 
-        self.liked_img = 0
-        self.already_liked = 0
+        # self.liked_img = 0
+        # self.already_liked = 0
 
-        self.dont_include = set()
-        self.white_list = set()
+        # self.dont_include = set()
+        # self.white_list = set()
 
         self.user_interact_amount = 0
         self.user_interact_media = None
         self.user_interact_percentage = 0
         self.user_interact_random = False
 
-        self.max_followers = None   # 90000
-        self.max_following = None   # 66834
-        self.min_followers = None   # 35
-        self.min_following = None   # 27
-        self.max_posts = None
-        self.min_posts = None
+        # self.max_followers = None   # 90000
+        # self.max_following = None   # 66834
+        # self.min_followers = None   # 35
+        # self.min_following = None   # 27
+        # self.max_posts = None
+        # self.min_posts = None
 
-        self.quotient_breach = False
+        # self.quotient_breach = False
         self.jumps = {
             "consequent": {"likes": 0, "comments": 0, "follows": 0, "unfollows": 0},
             "limit": {"likes": 7, "comments": 3, "follows": 5, "unfollows": 4}
@@ -196,7 +196,7 @@ class TwitterPy:
                             "critical",
                             self.logger)
 
-            self.aborting = True
+            # self.aborting = True
         else:
             message = "Logged in successfully!"
             highlight_print(Settings, self.username,
@@ -232,45 +232,44 @@ class TwitterPy:
     def set_do_follow(self, enabled=False, percentage=0, times=1):
         self.follow_times = times
         self.do_follow = enabled
-        self.follow_percentage = percentage
+        # self.follow_percentage = percentage
 
         return self
 
-    def set_dont_include(self, friends=None):
-        """Defines which accounts should not be unfollowed"""
-        if self.aborting:
-            return self
+    # def set_dont_include(self, friends=None):
+    #     """Defines which accounts should not be unfollowed"""
+    #     if self.aborting:
+    #         return self
 
-        self.dont_include = set(friends) or set()
-        self.white_list = set(friends) or set()
+    #     self.dont_include = set(friends) or set()
+    #     self.white_list = set(friends) or set()
+    #     return self
 
-        return self
+    # def set_relationship_bounds(self,
+    #                             enabled=None,
+    #                             potency_ratio=None,
+    #                             delimit_by_numbers=None,
+    #                             min_posts=None,
+    #                             max_posts=None,
+    #                             max_followers=None,
+    #                             max_following=None,
+    #                             min_followers=None,
+    #                             min_following=None):
+    #     """Sets the potency ratio and limits to the provide an efficient
+    #     activity between the targeted masses"""
 
-    def set_relationship_bounds(self,
-                                enabled=None,
-                                potency_ratio=None,
-                                delimit_by_numbers=None,
-                                min_posts=None,
-                                max_posts=None,
-                                max_followers=None,
-                                max_following=None,
-                                min_followers=None,
-                                min_following=None):
-        """Sets the potency ratio and limits to the provide an efficient
-        activity between the targeted masses"""
+    #     # self.potency_ratio = potency_ratio if enabled is True else None
+    #     # self.delimit_by_numbers = delimit_by_numbers if enabled is True else \
+    #         # None
 
-        self.potency_ratio = potency_ratio if enabled is True else None
-        self.delimit_by_numbers = delimit_by_numbers if enabled is True else \
-            None
+    #     # self.max_followers = max_followers
+    #     # self.min_followers = min_followers
 
-        self.max_followers = max_followers
-        self.min_followers = min_followers
+    #     # self.max_following = max_following
+    #     # self.min_following = min_following
 
-        self.max_following = max_following
-        self.min_following = min_following
-
-        self.min_posts = min_posts if enabled is True else None
-        self.max_posts = max_posts if enabled is True else None
+    #     self.min_posts = min_posts if enabled is True else None
+    #     self.max_posts = max_posts if enabled is True else None
 
     def set_user_interact(self,
                           amount=10,
@@ -572,14 +571,14 @@ class TwitterPy:
         # not_valid_users = 0
 
         # hold the current global values for differentiating at the end
-        liked_init = self.liked_img
-        already_liked_init = self.already_liked
+        # liked_init = self.liked_img
+        # already_liked_init = self.already_liked
         # commented_init = self.commented
         # inap_img_init = self.inap_img
 
         relax_point = random.randint(7, 14)  # you can use some plain value
         # `10` instead of this quitely randomized score
-        self.quotient_breach = False
+        # self.quotient_breach = False
 
         for acc_to_follow in followlist:
             if self.jumps["consequent"]["follows"] >= self.jumps["limit"][
@@ -700,7 +699,7 @@ class TwitterPy:
 
         # always sum up general objects regardless of the request size
         self.followed += followed_all
-        self.already_followed += already_followed
+        # self.already_followed += already_followed
         # self.not_valid_users += not_valid_users
 
         return followed_all
@@ -749,7 +748,7 @@ class TwitterPy:
     def end(self):
         """Closes the current session"""
 
-        IS_RUNNING = False
+        # IS_RUNNING = False
         close_browser(self.browser, False, self.logger)
 
         with interruption_handler():

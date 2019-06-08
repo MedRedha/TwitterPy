@@ -21,14 +21,14 @@ with smart_run(session):
     # activity
     # session.like_by_tags(["natgeo"], amount=10)
 
-    session.set_relationship_bounds(enabled=True,
-                                    potency_ratio=None,
-                                    delimit_by_numbers=True,
-                                    max_followers=7500,
-                                    max_following=3000,
-                                    min_followers=25,
-                                    min_following=25,
-                                    min_posts=1)
+    # session.set_relationship_bounds(enabled=True,
+    #                                 potency_ratio=None,
+    #                                 delimit_by_numbers=True,
+    #                                 max_followers=7500,
+    #                                 max_following=3000,
+    #                                 min_followers=25,
+    #                                 min_following=25,
+    #                                 min_posts=1)
 
     session.set_user_interact(amount=3, randomize=True, percentage=80, media='Photo')
     # session.set_do_like(enabled=True, percentage=90)
@@ -45,7 +45,7 @@ with smart_run(session):
     followers, following = session.get_relationship_counts()
 
     if 5*followers < following:
-        session.unfollow_all(amount=max(int(0.9*following), random.randint(40, 60)))
+        session.unfollow_all(amount=min(int(0.5*following), random.randint(40, 60)))
 
     # session.follow_by_list(followlist=random_targets, times=1, sleep_delay=600, interact=False)
 
