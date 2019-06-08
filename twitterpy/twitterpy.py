@@ -24,6 +24,7 @@ from socialcommons.util import highlight_print
 from socialcommons.util import truncate_float
 from socialcommons.util import format_number
 from socialcommons.util import web_address_navigator
+from socialcommons.util import save_account_progress
 
 from socialcommons.time_util import sleep
 

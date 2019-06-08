@@ -12,7 +12,14 @@ from socialcommons.util import explicit_wait
 from socialcommons.util import find_user_id
 from socialcommons.util import get_action_delay
 from socialcommons.util import emergency_exit
+from socialcommons.util import click_visibly
+from socialcommons.util import click_element
+from socialcommons.util import reload_webpage
 
+from .xpath import read_xpath
+
+from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import ElementNotVisibleException
 from .settings import Settings
 
 def follow_restriction(operation, username, limit, logger):
@@ -245,3 +252,104 @@ def get_following_status(browser, track, username, person, person_id, logger,
 
     return following_status, follow_button
 
+
+def verify_action(browser, action, track, username, person, person_id, logger,
+                  logfolder):
+    """ Verify if the action has succeeded """
+    # currently supported actions are follow & unfollow
+
+    retry_count = 0
+
+    if action in ["follow", "unfollow"]:
+
+        # assuming button_change testing is relevant to those actions only
+        button_change = False
+
+        if action == "follow":
+            post_action_text_correct = ["Following", "Requested"]
+            post_action_text_fail = ["Follow", "Follow Back", "Unblock"]
+
+        elif action == "unfollow":
+            post_action_text_correct = ["Follow", "Follow Back", "Unblock"]
+            post_action_text_fail = ["Following", "Requested"]
+
+        while True:
+
+            # count retries at beginning
+            retry_count += 1
+
+            # find out CURRENT follow status (this is safe as the follow button is before others)
+            following_status, follow_button = get_following_status(browser,
+                                                                   track,
+                                                                   username,
+                                                                   person,
+                                                                   person_id,
+                                                                   logger,
+                                                                   logfolder)
+            if following_status in post_action_text_correct:
+                button_change = True
+            elif following_status in post_action_text_fail:
+                button_change = False
+            else:
+                logger.error(
+                    "Hey! Last {} is not verified out of an unexpected "
+                    "failure!".format(action))
+                return False, "unexpected"
+
+
+            if button_change:
+                break
+            else:
+                if retry_count == 1:
+                    reload_webpage(browser)
+
+                elif retry_count == 2:
+                    # handle it!
+                    # try to do the action one more time!
+                    click_visibly(browser, follow_button)
+
+                    if action == "unfollow":
+                        confirm_unfollow(browser)
+
+                    sleep(4)
+
+                elif retry_count == 3:
+                    logger.warning("Phew! Last {0} is not verified."
+                                   "\t~'{1}' might be temporarily blocked "
+                                   "from {0}ing\n"
+                                   .format(action, username))
+                    sleep(210)
+                    return False, "temporary block"
+
+        if retry_count == 2:
+            logger.info(
+                "Last {} is verified after reloading the page!".format(
+                    action))
+
+    return True, "success"
+
+
+
+def confirm_unfollow(browser):
+    """ Deal with the confirmation dialog boxes during an unfollow """
+    attempt = 0
+
+    while attempt < 3:
+        try:
+            attempt += 1
+            button_xp = read_xpath(confirm_unfollow.__name__,"button_xp")  # "//button[contains(
+            # text(), 'Unfollow')]"
+            unfollow_button = browser.find_element_by_xpath(button_xp)
+
+            if unfollow_button.is_displayed():
+                click_element(browser, unfollow_button)
+                sleep(2)
+                break
+
+        except (ElementNotVisibleException, NoSuchElementException) as exc:
+            # prob confirm dialog didn't pop up
+            if isinstance(exc, ElementNotVisibleException):
+                break
+
+            elif isinstance(exc, NoSuchElementException):
+                sleep(1)
