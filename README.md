@@ -58,3 +58,9 @@ pip install -r requirements.txt
  -  modify `quickstart.py` according to your requirements
  -  `python quickstart.py -u <my_twitter_username> -p <mypssword>`
 
+
+## How to schedule as a job:
+
+```bash
+    */10 * * * * bash /path/to/TwitterPy/run_githubpy_only_once_for_mac.sh /path/to/TwitterPy/quickstart.py $USERNAME $PASSWORD
+```
