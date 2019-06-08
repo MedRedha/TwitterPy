@@ -419,7 +419,7 @@ class TwitterPy:
 
         for i in range(0, len(rows)):
             try:
-                self.browser.execute_script("window.scrollTo(0, " + str(80*i) + ");")
+                self.browser.execute_script("window.scrollTo(0, " + str(ROW_HEIGHT*i) + ");")
                 sleep(delay_random)
                 profilelink = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > a")
                 print(i, "About to unfollow =>", profilelink.get_attribute("href"))
