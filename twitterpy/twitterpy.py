@@ -96,8 +96,8 @@ class TwitterPy:
         # self.liked_img = 0
         # self.already_liked = 0
 
-        # self.dont_include = set()
-        # self.white_list = set()
+        self.dont_include = set()
+        self.white_list = set()
 
         self.user_interact_amount = 0
         self.user_interact_media = None
@@ -237,14 +237,14 @@ class TwitterPy:
 
         return self
 
-    # def set_dont_include(self, friends=None):
-    #     """Defines which accounts should not be unfollowed"""
-    #     if self.aborting:
-    #         return self
+    def set_dont_include(self, friends=None):
+        """Defines which accounts should not be unfollowed"""
+        # if self.aborting:
+        #     return self
 
-    #     self.dont_include = set(friends) or set()
-    #     self.white_list = set(friends) or set()
-    #     return self
+        self.dont_include = set(friends) or set()
+        self.white_list = set(friends) or set()
+        return self
 
     # def set_relationship_bounds(self,
     #                             enabled=None,
@@ -421,9 +421,16 @@ class TwitterPy:
             try:
                 self.browser.execute_script("window.scrollTo(0, " + str(ROW_HEIGHT*i) + ");")
                 sleep(delay_random)
-                profilelink = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > a")
-                print(i, "About to unfollow =>", profilelink.get_attribute("href"))
+                profilelink_tag = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > a")
+                profilelink = profilelink_tag.get_attribute("href")
+
+                if profilelink.split('/')[3] in self.white_list:
+                    print(profilelink.split('/')[3] , 'is in white_list, hence skipping..')
+                    continue
+
+                print(i, "About to unfollow =>", profilelink)
                 button = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span")
+
                 if button.text=='Following':
                     print('Clicking', button.text)
                     button_old_text = button.text
@@ -505,11 +512,12 @@ class TwitterPy:
                 print(len(rows))
                 self.browser.execute_script("window.scrollTo(0, 0);")
 
-            for jc, row in enumerate(rows):
+            for i, row in enumerate(rows):
                 try:
-                    profilelink = row.find_element_by_css_selector("div > a")
+                    profilelink_tag = row.find_element_by_css_selector("div > a")
                     button = row.find_element_by_css_selector("div > div > div > div > span > span")
-                    print(profilelink.get_attribute("href"))
+                    profilelink = profilelink_tag.get_attribute("href")
+                    print(profilelink)
                     if button.text=='Follow':
                         print('Clicking', button.text)
                         button_old_text = button.text

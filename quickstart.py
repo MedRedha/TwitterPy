@@ -15,8 +15,8 @@ session = TwitterPy(use_firefox=True)
 
 with smart_run(session):
     """ Activity flow """
-    # # general settings
-    # session.set_dont_include(["friend1", "friend2", "friend3"])
+    # general settings
+    session.set_dont_include(["HalaPlayDotCom", "ballebaazi", "PlayMPL", "MyTeam_11", "dream11", "PlayerzPot"])
 
     # activity
     # session.like_by_tags(["natgeo"], amount=10)
