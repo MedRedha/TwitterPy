@@ -18,6 +18,7 @@ pip install -r requirements.txt
   - [Follow usernames given by a list](#Follow-usernames-given-by-a-list)
   - [Follow followers of each of the users from a list](#Follow-followers-of-each-of-the-users-from-a-list)
   - [Unfollow all](#Unfollow-all)
+  = [Send a welcome message](#Send-a-welcome-message)
 
 ### Follow usernames given by a list
  
@@ -51,6 +52,16 @@ pip install -r requirements.txt
 
  with smart_run(session):
      session.unfollow_all(amount=random.randint(30, 60))
+ ```
+ 
+### Send a welcome message
+
+```python
+
+ session = TwitterPy()
+
+ with smart_run(session):
+     session.welcome_dm("Hello")
  ```
  
 ## How to run:

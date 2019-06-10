@@ -9,22 +9,25 @@ from .login_util import login_user
 from .settings import Settings
 
 from .unfollow_util  import follow_restriction
+from .unfollow_util  import dm_restriction
 # from .unfollow_util  import unfollow_user
 from .unfollow_util  import follow_user
 
 from contextlib import contextmanager
 from tempfile import gettempdir
+import pprint as pp
 
 from socialcommons.print_log_writer import log_follower_num
 from socialcommons.print_log_writer import log_following_num
 
-from socialcommons.util import parse_cli_args
-from socialcommons.util import interruption_handler
-from socialcommons.util import highlight_print
-from socialcommons.util import truncate_float
-from socialcommons.util import format_number
-from socialcommons.util import web_address_navigator
-from socialcommons.util import save_account_progress
+from .util import parse_cli_args
+from .util import interruption_handler
+from .util import highlight_print
+from .util import truncate_float
+from .util import format_number
+from .util import web_address_navigator
+from .util import save_account_progress
+from .util import get_relationship_counts
 
 from socialcommons.time_util import sleep
 
@@ -35,6 +38,7 @@ from socialcommons.browser import set_selenium_local_session
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 
 from socialcommons.exceptions import SocialPyError
 
@@ -207,8 +211,8 @@ class TwitterPy:
                             self.logger)
             # try to save account progress
             try:
-                save_account_progress(self.browser,
-                                    "https://www.twitter.com/",
+                save_account_progress(Settings,
+                                    self.browser,
                                     self.username,
                                     self.logger)
             except Exception:
@@ -287,6 +291,113 @@ class TwitterPy:
         self.user_interact_media = media
 
         return self
+
+    def count_new_followers(self, sleep_delay=2):
+        web_address_navigator(Settings, self.browser, "https://twitter.com/notifications")
+        print('Browsing my notifications')
+        delay_random = random.randint(
+                    ceil(sleep_delay * 0.85),
+                    ceil(sleep_delay * 1.14))
+        sleep(delay_random)
+        rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div > section > div > div > div > div > div > article > div > div")
+        cnt = 0
+        for row in rows:
+            try:
+                if "followed you" in row.text:
+                    # print(row.text)
+                    if "others" in row.text:
+                        splitted = row.text.split('others')[0].split(' ')
+                        splitted = [x for x in splitted if x]
+                        cnt = cnt + int(splitted[-1]) + 1
+                    elif "others" in row.text:
+                        cnt = cnt + 2
+                    else:
+                        cnt = cnt + 1
+            except Exception as e:
+                print(e)
+        return cnt
+
+    def welcome_dm(self, message, sleep_delay=2):
+        new_followers_cnt = self.count_new_followers()
+        print("Potential new followers:", new_followers_cnt)
+
+        web_address_navigator(Settings, self.browser, "https://twitter.com/" + self.username + "/followers")
+        rows = []
+        print('Browsing followers of', self.username)
+        delay_random = random.randint(
+                    ceil(sleep_delay * 0.85),
+                    ceil(sleep_delay * 1.14))
+
+        while len(rows) < new_followers_cnt:
+            self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            sleep(delay_random)
+            rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
+            print(len(rows), "rows navigated")
+            self.browser.execute_script("window.scrollTo(0, 0);")
+
+        sleep(delay_random)
+        rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
+        print(len(rows), "rows to be enumerated")
+        self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        sleep(delay_random)
+
+        user_names = []
+
+        for i in range(0, len(rows)):
+            try:
+                self.browser.execute_script("window.scrollTo(0, " + str(ROW_HEIGHT*i) + ");")
+                profilelink_tag = self.browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div:nth-child(" + str(i+1) + ") > div > div > div > div > div > div > a")
+                user_name = profilelink_tag.get_attribute('href').split('/')[3]
+                print(user_name)
+                user_names.append(user_name)
+                sleep(delay_random*0.2)
+            except Exception as e:
+                print(e)
+                if profilelink_tag:
+                    print(profilelink_tag)
+                if user_name:
+                    print(user_name)
+
+        for user_name in user_names:
+            print("Opening dm of", user_name)
+            try:
+                if dm_restriction("read", user_name,  self.follow_times, self.logger):
+                    continue
+                web_address_navigator(Settings, self.browser, "https://twitter.com/{}".format(user_name))
+                mail_button = self.browser.find_element_by_css_selector("div > div > div > div > div > div > div > div > div:nth-child(1) > div > div > div > div[aria-label='Message'] > div > svg")
+                (ActionChains(self.browser)
+                 .move_to_element(mail_button)
+                 .perform())
+                sleep(delay_random)
+
+                (ActionChains(self.browser)
+                 .click()
+                 .perform())
+                sleep(delay_random*5)
+
+                header_user_name_tag = self.browser.find_element_by_css_selector("div > div > div > section:nth-child(2) > div > div > div > div > div > div > div > span")
+                print(header_user_name_tag.text[1:])
+
+                if header_user_name_tag.text[1:]==user_name:
+                    textbox = self.browser.find_element_by_css_selector("div > textarea")
+                    (ActionChains(self.browser)
+                     .move_to_element(textbox)
+                     .click()
+                     .send_keys(message)
+                     .perform())
+                    sleep(delay_random)
+    
+                    (ActionChains(self.browser)
+                     .send_keys(Keys.RETURN)
+                     .perform())
+                    sleep(delay_random)
+
+                    print("Sent {} . Returning...".format(message))
+                    dm_restriction("write", user_name, None, self.logger)
+                else:
+                    print("header_user_name mismatch")
+            except Exception as e:
+                print(e)
 
     # def follow_user(self, browser, track, login, userid_to_follow, button, blacklist,
     #                 logger, logfolder, Settings):
@@ -389,15 +500,12 @@ class TwitterPy:
     #     return True, "success"
 
     def get_relationship_counts(self):
-        web_address_navigator(self.browser, "https://twitter.com/" + self.username, Settings)
-        followers = self.browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div:nth-child(1) > div > div:nth-child(5) > div:nth-child(2) > a > span > span")
-        following = self.browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div:nth-child(1) > div > div:nth-child(5) > div:nth-child(1) > a > span > span")
-        return format_number(followers.text), format_number(following.text)
+        return get_relationship_counts(self.browser, self.username, self.logger)
 
     def unfollow_all(self, amount=100, sleep_delay=2):
         unfollowed = 0
         failed = 0
-        web_address_navigator(self.browser, "https://twitter.com/" + self.username + "/following", Settings)
+        web_address_navigator(Settings, self.browser, "https://twitter.com/" + self.username + "/following")
         rows = []
         print('Browsing followings of', self.username)
         delay_random = random.randint(
@@ -499,7 +607,7 @@ class TwitterPy:
         followed = 0
         failed = 0
         for user in users:
-            web_address_navigator(self.browser, "https://twitter.com/" + user + "/followers", Settings)
+            web_address_navigator(Settings, self.browser, "https://twitter.com/" + user + "/followers")
             rows = []
             print('Browsing followers of', user)
             while len(rows) < 10:

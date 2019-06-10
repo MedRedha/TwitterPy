@@ -2,7 +2,7 @@ from datetime import datetime
 import sqlite3
 
 from socialcommons.time_util import sleep
-from socialcommons.database_engine import get_database
+from .database_engine import get_database
 from socialcommons.quota_supervisor import quota_supervisor
 from socialcommons.print_log_writer import log_followed_pool
 
@@ -21,6 +21,67 @@ from .xpath import read_xpath
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementNotVisibleException
 from .settings import Settings
+
+def dm_restriction(operation, username, limit, logger):
+    """ Keep track of the followed users and help avoid excessive follow of
+    the same user """
+
+    try:
+        # get a DB and start a connection
+        db, id = get_database(Settings)
+        conn = sqlite3.connect(db)
+
+        with conn:
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+
+            cur.execute(
+                "SELECT * FROM dmRestriction WHERE profile_id=:id_var "
+                "AND username=:name_var",
+                {"id_var": id, "name_var": username})
+            data = cur.fetchone()
+            follow_data = dict(data) if data else None
+
+            if operation == "write":
+                if follow_data is None:
+                    # write a new record
+                    cur.execute(
+                        "INSERT INTO dmRestriction (profile_id, "
+                        "username, times) VALUES (?, ?, ?)",
+                        (id, username, 1))
+                else:
+                    # update the existing record
+                    follow_data["times"] += 1
+                    sql = "UPDATE dmRestriction set times = ? WHERE " \
+                          "profile_id=? AND username = ?"
+                    cur.execute(sql, (follow_data["times"], id, username))
+
+                # commit the latest changes
+                conn.commit()
+
+            elif operation == "read":
+                if follow_data is None:
+                    return False
+
+                elif follow_data["times"] < limit:
+                    return False
+
+                else:
+                    exceed_msg = "" if follow_data[
+                        "times"] == limit else "more than "
+                    logger.info("---> {} has been DMed {}{} times"
+                                .format(username, exceed_msg, str(limit)))
+                    return True
+
+    except Exception as exc:
+        logger.error(
+            "Dap! Error occurred with dm Restriction:\n\t{}".format(
+                str(exc).encode("utf-8")))
+
+    finally:
+        if conn:
+            # close the open connection
+            conn.close()
 
 def follow_restriction(operation, username, limit, logger):
     """ Keep track of the followed users and help avoid excessive follow of
