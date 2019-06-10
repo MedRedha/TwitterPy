@@ -399,6 +399,64 @@ class TwitterPy:
             except Exception as e:
                 print(e)
 
+    def retweet_it(self, sleep_delay=2):
+        print("Seems recent, Retweeting...")
+        delay_random = random.randint(
+                    ceil(sleep_delay * 0.85),
+                    ceil(sleep_delay * 1.14))
+
+        for i in range(1, 5):
+            sleep(delay_random)
+            self.browser.execute_script("window.scrollTo(0, 200*" + str(i) + ");")
+            sleep(delay_random)
+            try:
+                retweet_button = self.browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div > div > div > section > div > div > div > div > div > div > article > div > div > div > div:nth-child(2) > div > div > div:nth-child(1) > svg > g > path")
+                (ActionChains(self.browser)
+                 .move_to_element(retweet_button)
+                 .perform())
+                sleep(delay_random)
+
+                (ActionChains(self.browser)
+                 .click()
+                 .perform())
+                print("Retweet clicked")
+                sleep(delay_random)
+
+                #TODO: This is a hack.Since retweet popup opens exact over the button this is working
+                retweet_inside_popup = self.browser.find_element_by_css_selector("div > div > div > div > div > div:nth-child(2) > div > div > div > div > div:nth-child(1)")
+                (ActionChains(self.browser)
+                 .move_to_element(retweet_inside_popup)
+                 .perform())
+                sleep(delay_random)
+
+                (ActionChains(self.browser)
+                 .click()
+                 .perform())
+                print("Retweet popup clicked")
+                sleep(delay_random)
+                break
+            except Exception as e:
+                print("Still not visible, scrolling further down")
+
+    def retweet_latest(self, users, window_hours=1, sleep_delay=2):
+        for user in users:
+            web_address_navigator(Settings, self.browser, "https://twitter.com/" + user)
+            latest_tweet_time_info = self.browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div > div > div > section > div > div > div > div > div > div > article > div > div:nth-child(2) > div > div:nth-child(1) > div:nth-child(1) > a > time")
+            print(user)
+            print(latest_tweet_time_info.text)
+            if "m" in latest_tweet_time_info.text:
+                self.retweet_it(sleep_delay)
+            else:
+                if "h" in latest_tweet_time_info.text:
+                    hrs = int(latest_tweet_time_info.text.strip()[:-1])
+                    if hrs <= window_hours:
+                        self.retweet_it(sleep_delay)
+                    else:
+                        print("More than {} hour(s) old".format(str(hrs)))
+                else:
+                    print("Might be days old")
+            print("======")
+
     # def follow_user(self, browser, track, login, userid_to_follow, button, blacklist,
     #                 logger, logfolder, Settings):
     #     """ Follow a user either from the profile page or post page or dialog

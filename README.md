@@ -18,7 +18,8 @@ pip install -r requirements.txt
   - [Follow usernames given by a list](#Follow-usernames-given-by-a-list)
   - [Follow followers of each of the users from a list](#Follow-followers-of-each-of-the-users-from-a-list)
   - [Unfollow all](#Unfollow-all)
-  = [Send a welcome message](#Send-a-welcome-message)
+  - [Send a welcome message](#Send-a-welcome-message)
+  - [Retweet the lastest tweet for each of the given users](#Retweet-the-lastest-tweet-for-each-of-the-given-users)
 
 ### Follow usernames given by a list
  
@@ -62,6 +63,17 @@ pip install -r requirements.txt
 
  with smart_run(session):
      session.welcome_dm("Hello")
+ ```
+
+
+### Retweet the lastest tweet for each of the given users
+
+```python
+
+ session = TwitterPy()
+
+ with smart_run(session):
+     session.retweet_latest(self, users_list, window_hours=1, sleep_delay=2)
  ```
  
 ## How to run:
