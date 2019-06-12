@@ -328,7 +328,9 @@ class TwitterPy:
                     ceil(sleep_delay * 0.85),
                     ceil(sleep_delay * 1.14))
 
-        while len(rows) < new_followers_cnt:
+        scroll_limit = 0
+        while len(rows) < new_followers_cnt and scroll_limit < 10:
+            scroll_limit = scroll_limit + 1
             self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             sleep(delay_random)
             rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
@@ -347,17 +349,16 @@ class TwitterPy:
             try:
                 self.browser.execute_script("window.scrollTo(0, " + str(ROW_HEIGHT*i) + ");")
                 profilelink_tag = self.browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div:nth-child(" + str(i+1) + ") > div > div > div > div > div > div > a")
-                user_name = profilelink_tag.get_attribute('href').split('/')[3]
-                print(user_name)
+                profilelink = profilelink_tag.get_attribute('href')
+                print(profilelink)
+                user_name = profilelink.split('/')[3]
+                print("Collected=>", user_name)
                 user_names.append(user_name)
                 sleep(delay_random*0.2)
             except Exception as e:
                 print(e)
-                if profilelink_tag:
-                    print(profilelink_tag)
-                if user_name:
-                    print(user_name)
 
+        dm_cnt = 0
         for user_name in user_names:
             print("Opening dm of", user_name)
             try:
@@ -392,10 +393,15 @@ class TwitterPy:
                      .perform())
                     sleep(delay_random)
 
-                    print("Sent {} . Returning...".format(message))
+                    print("To: {} Sent:".format(user_name), message)
                     dm_restriction("write", user_name, None, self.logger)
+                    dm_cnt = dm_cnt + 1
                 else:
                     print("header_user_name mismatch")
+                print("Total DMed in this iteration {}".format(dm_cnt))
+                if dm_cnt > 5:
+                    print("Too much of same DM sent. Returning")
+                    return
             except Exception as e:
                 print(e)
 

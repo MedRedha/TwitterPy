@@ -46,5 +46,13 @@ with smart_run(session):
     # session.follow_by_list(followlist=random_target_users_4_copying_followers, times=1, sleep_delay=600, interact=False)
     session.follow_user_followers(random_target_users_4_copying_followers, amount=random.randint(10, 30))
     # session.follow_likers(random_target_users_4_copying_followers, photos_grab_amount = 2, follow_likers_per_photo = 3, randomize=True, sleep_delay=600, interact=False)
-    session.welcome_dm("Thanks For Following. Happy To Connect.👍😀🙏")
+    comments = [ "Thanks For Connecting.👍😀🙏",
+        "Hi, how are you ?",
+        "Are you into Fantasy Sports",
+        "Sirji, Welcome to Picklively family🙏",
+        "Which is your favorite Fantasy Sports site ?",
+        "Who do you think will win today ?",
+        "Thanks For Following. Happy To Connect.👍😀🙏"
+    ]
+    session.welcome_dm(comments[random.randint(0, len(comments)-1)])
     session.retweet_latest(random_target_users_4_retweeting, window_hours=1)
