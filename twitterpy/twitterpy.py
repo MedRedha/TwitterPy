@@ -294,7 +294,7 @@ class TwitterPy:
 
     def count_new_followers(self, sleep_delay=2):
         web_address_navigator(Settings, self.browser, "https://twitter.com/notifications")
-        print('Browsing my notifications')
+        self.logger.info('Browsing my notifications')
         delay_random = random.randint(
                     ceil(sleep_delay * 0.85),
                     ceil(sleep_delay * 1.14))
@@ -304,7 +304,7 @@ class TwitterPy:
         for row in rows:
             try:
                 if "followed you" in row.text:
-                    # print(row.text)
+                    # self.logger.info(row.text)
                     if "others" in row.text:
                         splitted = row.text.split('others')[0].split(' ')
                         splitted = [x for x in splitted if x]
@@ -314,16 +314,16 @@ class TwitterPy:
                     else:
                         cnt = cnt + 1
             except Exception as e:
-                print(e)
+                self.logger.error(e)
         return cnt
 
     def welcome_dm(self, message, sleep_delay=2):
         new_followers_cnt = self.count_new_followers()
-        print("Potential new followers:", new_followers_cnt)
+        self.logger.info("Potential new followers: {}".format(new_followers_cnt))
 
         web_address_navigator(Settings, self.browser, "https://twitter.com/" + self.username + "/followers")
         rows = []
-        print('Browsing followers of', self.username)
+        self.logger.info('Browsing followers of {}'.format(self.username))
         delay_random = random.randint(
                     ceil(sleep_delay * 0.85),
                     ceil(sleep_delay * 1.14))
@@ -350,17 +350,17 @@ class TwitterPy:
                 self.browser.execute_script("window.scrollTo(0, " + str(ROW_HEIGHT*i) + ");")
                 profilelink_tag = self.browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div:nth-child(" + str(i+1) + ") > div > div > div > div > div > div > a")
                 profilelink = profilelink_tag.get_attribute('href')
-                print(profilelink)
+                self.logger.info(profilelink)
                 user_name = profilelink.split('/')[3]
-                print("Collected=>", user_name)
+                self.logger.info("Collected=> {}".format(user_name))
                 user_names.append(user_name)
                 sleep(delay_random*0.2)
             except Exception as e:
-                print(e)
+                self.logger.error(e)
 
         dm_cnt = 0
         for user_name in user_names:
-            print("Opening dm of", user_name)
+            self.logger.info("Opening dm of {}".format(user_name))
             try:
                 if dm_restriction("read", user_name,  self.follow_times, self.logger):
                     continue
@@ -377,7 +377,7 @@ class TwitterPy:
                 sleep(delay_random*5)
 
                 header_user_name_tag = self.browser.find_element_by_css_selector("div > div > div > section:nth-child(2) > div > div > div > div > div > div > div > span")
-                print(header_user_name_tag.text[1:])
+                self.logger.info(header_user_name_tag.text[1:])
 
                 if header_user_name_tag.text[1:]==user_name:
                     textbox = self.browser.find_element_by_css_selector("div > textarea")
@@ -393,20 +393,21 @@ class TwitterPy:
                      .perform())
                     sleep(delay_random)
 
-                    print("To: {} Sent:".format(user_name), message)
+                    self.logger.info("To: {} ".format(user_name))
+                    print("Sent:", message)
                     dm_restriction("write", user_name, None, self.logger)
                     dm_cnt = dm_cnt + 1
                 else:
-                    print("header_user_name mismatch")
-                print("Total DMed in this iteration {}".format(dm_cnt))
+                    self.logger.info("header_user_name mismatch")
+                self.logger.info("Total DMed in this iteration {}".format(dm_cnt))
                 if dm_cnt > 5:
-                    print("Too much of same DM sent. Returning")
+                    self.logger.info("Too much of same DM sent. Returning")
                     return
             except Exception as e:
-                print(e)
+                self.logger.error(e)
 
     def retweet_it(self, sleep_delay=2):
-        print("Seems recent, Retweeting...")
+        self.logger.info("Seems recent, Retweeting...")
         delay_random = random.randint(
                     ceil(sleep_delay * 0.85),
                     ceil(sleep_delay * 1.14))
@@ -425,7 +426,7 @@ class TwitterPy:
                 (ActionChains(self.browser)
                  .click()
                  .perform())
-                print("Retweet clicked")
+                self.logger.info("Retweet clicked")
                 sleep(delay_random)
 
                 #TODO: This is a hack.Since retweet popup opens exact over the button this is working
@@ -438,18 +439,18 @@ class TwitterPy:
                 (ActionChains(self.browser)
                  .click()
                  .perform())
-                print("Retweet popup clicked")
+                self.logger.info("Retweet popup clicked")
                 sleep(delay_random)
                 break
             except Exception as e:
-                print("Still not visible, scrolling further down")
+                self.logger.info("Still not visible, scrolling further down")
 
     def retweet_latest(self, users, window_hours=1, sleep_delay=2):
         for user in users:
             web_address_navigator(Settings, self.browser, "https://twitter.com/" + user)
             latest_tweet_time_info = self.browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div > div > div > section > div > div > div > div > div > div > article > div > div:nth-child(2) > div > div:nth-child(1) > div:nth-child(1) > a > time")
-            print(user)
-            print(latest_tweet_time_info.text)
+            self.logger.info(user)
+            self.logger.info(latest_tweet_time_info.text)
             if "m" in latest_tweet_time_info.text:
                 self.retweet_it(sleep_delay)
             else:
@@ -458,10 +459,10 @@ class TwitterPy:
                     if hrs <= window_hours:
                         self.retweet_it(sleep_delay)
                     else:
-                        print("More than {} hour(s) old".format(str(hrs)))
+                        self.logger.info("More than {} hour(s) old".format(str(hrs)))
                 else:
-                    print("Might be days old")
-            print("======")
+                    self.logger.info("Might be days old")
+            self.logger.info("======")
 
     # def follow_user(self, browser, track, login, userid_to_follow, button, blacklist,
     #                 logger, logfolder, Settings):
@@ -571,7 +572,7 @@ class TwitterPy:
         failed = 0
         web_address_navigator(Settings, self.browser, "https://twitter.com/" + self.username + "/following")
         rows = []
-        print('Browsing followings of', self.username)
+        self.logger.info('Browsing followings of {}'.format(self.username))
         delay_random = random.randint(
                     ceil(sleep_delay * 0.85),
                     ceil(sleep_delay * 1.14))
@@ -597,14 +598,14 @@ class TwitterPy:
                 profilelink = profilelink_tag.get_attribute("href")
 
                 if profilelink.split('/')[3] in self.white_list:
-                    print(profilelink.split('/')[3] , 'is in white_list, hence skipping..')
+                    self.logger.info(' {} is in white_list, hence skipping..'.format(profilelink.split('/')[3]))
                     continue
 
-                print(i, "About to unfollow =>", profilelink)
+                self.logger.info(" {} About to unfollow => {} ".format(i, profilelink))
                 button = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span")
 
                 if button.text=='Following':
-                    print('Clicking', button.text)
+                    self.logger.info('Clicking {}'.format(button.text))
                     button_old_text = button.text
 
                     (ActionChains(self.browser)
@@ -642,30 +643,30 @@ class TwitterPy:
 
                     if button_old_text == self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text:
                         failed = failed + 1
-                        print('Failed {} times'.format(failed))
+                        self.logger.info('Failed {} times'.format(failed))
                     else:
                         unfollowed = unfollowed + 1
                         print('Button changed to', self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text)
                 else:
-                    print('Already', button.text)
+                    self.logger.info('Already {}'.format(button.text))
                 if unfollowed > amount:
                     break
             except Exception as e:
-                print(e)
+                self.logger.error(e)
                 if ('The element reference of' in str(e) or 'is out of bounds of viewport' in str(e) or 'Web element reference not seen before' in str(e)):
-                    print('Returning')
+                    self.logger.info('Returning')
                     return
                 else:
                     failed = failed + 1
-                    print('Failed {} times'.format(failed))
+                    self.logger.info('Failed {} times'.format(failed))
                 delay_random = random.randint(
                             ceil(sleep_delay * 0.85),
                             ceil(sleep_delay * 1.14))
                 sleep(delay_random)
             if failed >= 6:
-                print('Returning')
+                self.logger.warning('Returning')
                 return
-            print('unfollowed in this iteration till now:', unfollowed)
+            self.logger.info('unfollowed in this iteration till now: {}'.format(unfollowed))
 
     def follow_user_followers(self, users, amount, sleep_delay=2):
         followed = 0
@@ -673,7 +674,7 @@ class TwitterPy:
         for user in users:
             web_address_navigator(Settings, self.browser, "https://twitter.com/" + user + "/followers")
             rows = []
-            print('Browsing followers of', user)
+            self.logger.info('Browsing followers of {}'.format(user))
             while len(rows) < 10:
                 self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 delay_random = random.randint(
@@ -689,9 +690,9 @@ class TwitterPy:
                     profilelink_tag = row.find_element_by_css_selector("div > a")
                     button = row.find_element_by_css_selector("div > div > div > div > span > span")
                     profilelink = profilelink_tag.get_attribute("href")
-                    print(profilelink)
+                    self.logger.info(profilelink)
                     if button.text=='Follow':
-                        print('Clicking', button.text)
+                        self.logger.info('Clicking {}'.format(button.text))
                         button_old_text = button.text
 
                         (ActionChains(self.browser)
@@ -712,29 +713,29 @@ class TwitterPy:
 
                         if button_old_text == self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text:
                             failed = failed + 1
-                            print('Failed {} times'.format(failed))
+                            self.logger.info('Failed {} times'.format(failed))
                         else:
                             followed = followed + 1
                             print('Button changed to', self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text)
                     else:
-                        print('Already', button.text)
+                        self.logger.info('Already {}'.format(button.text))
                 except Exception as e:
-                    print(e)
+                    self.logger.error(e)
                     if ('The element reference of' in str(e) or 'is out of bounds of viewport' in str(e) or 'Web element reference not seen before' in str(e)):
-                        print('Breaking')
+                        self.logger.info('Breaking')
                         break
                     else:
                         failed = failed + 1
-                        print('Failed {} times'.format(failed))
+                        self.logger.info('Failed {} times'.format(failed))
                     delay_random = random.randint(
                                 ceil(sleep_delay * 0.85),
                                 ceil(sleep_delay * 1.14))
                     sleep(delay_random)
                 self.browser.execute_script("window.scrollTo(0, " + str((i+1)*ROW_HEIGHT) + ");")
                 if failed >= 6:
-                    print('Returning')
+                    self.logger.info('Returning')
                     return
-            print('followed in this iteration till now:', followed)
+            self.logger.info('followed in this iteration till now: {}'.format(followed))
 
     def follow_by_list(self, followlist, times=1, sleep_delay=600,
                        interact=False):
@@ -785,7 +786,7 @@ class TwitterPy:
 
             if follow_restriction("read", acc_to_follow, self.follow_times,
                                   self.logger):
-                print('')
+                self.logger.info('')
                 continue
 
             # if not users_validated:
@@ -874,7 +875,7 @@ class TwitterPy:
         #     self.logger.info("Not valid users: {}".format(not_valid_users))
 
         #     if interact is True:
-        #         print('')
+        #         self.logger.info('')
         #         # find the feature-wide action sizes by taking a difference
         #         liked = (self.liked_img - liked_init)
         #         already_liked = (self.already_liked - already_liked_init)
@@ -897,7 +898,7 @@ class TwitterPy:
     def live_report(self):
         """ Report live sessional statistics """
 
-        print('')
+        self.logger.info('')
 
         stats = [self.followed]
 
@@ -960,7 +961,7 @@ class TwitterPy:
 
             message = "Session ended!"
             highlight_print(Settings, self.username, message, "end", "info", self.logger)
-            print("\n\n")
+            self.logger.info("\n\n")
 
     def run_time(self):
         """ Get the time session lasted in seconds """
@@ -984,7 +985,7 @@ def smart_run(session):
             file_path = os.path.join(gettempdir(), log_file)
             with open(file_path, "wb") as fp:
                 fp.write(session.browser.page_source.encode("utf-8"))
-            print("{0}\nIf raising an issue, "
+            self.logger.info("{0}\nIf raising an issue, "
                   "please also upload the file located at:\n{1}\n{0}"
                   .format('*' * 70, file_path))
 
