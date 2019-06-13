@@ -567,7 +567,63 @@ class TwitterPy:
     def get_relationship_counts(self):
         return get_relationship_counts(self.browser, self.username, self.logger)
 
-    def unfollow_all(self, amount=100, sleep_delay=2):
+    def visit_and_unfollow(self, profilelink, sleep_delay=2):
+        web_address_navigator(Settings, self.browser,profilelink)
+        self.logger.info('Visiting {}'.format(profilelink))
+        button = self.browser.find_element_by_css_selector("div > div > div > div > div > div > div > div > div:nth-child(1) > div > div > div > div > div > div > div > span")
+        # for button in buttons:
+        #     print('button.text', button.text)
+        # button = buttons[0]
+        if button.text.strip()=='Following':
+            self.logger.info('Clicking {}'.format(button.text))
+            button_old_text = button.text.strip()
+
+            (ActionChains(self.browser)
+             .move_to_element(button)#self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span"))
+             .perform())
+            delay_random = random.randint(
+                        ceil(sleep_delay * 0.85),
+                        ceil(sleep_delay * 1.14))
+            sleep(delay_random)
+
+            (ActionChains(self.browser)
+             .click()
+             .perform())
+            delay_random = random.randint(
+                        ceil(sleep_delay * 0.85),
+                        ceil(sleep_delay * 1.14))
+            sleep(delay_random)
+
+
+            (ActionChains(self.browser)
+             .move_to_element(self.browser.find_element_by_css_selector("div > div > div > div > div > div > div > div > div > div > div:nth-child(2) > div > span > span"))
+             .perform())
+            delay_random = random.randint(
+                        ceil(sleep_delay * 0.85),
+                        ceil(sleep_delay * 1.14))
+            sleep(delay_random)
+
+            (ActionChains(self.browser)
+             .click()
+             .perform())
+            delay_random = random.randint(
+                        ceil(sleep_delay * 0.85),
+                        ceil(sleep_delay * 1.14))
+            sleep(delay_random)
+
+            if button_old_text == button.text.strip():
+                failed = failed + 1
+                self.logger.info('Failed {} times'.format(failed))
+            else:
+                # unfollowed = unfollowed + 1
+                print('Button changed to', button.text)
+                return True
+        else:
+            self.logger.info('Already {}'.format(button.text))
+        return False
+
+
+    def unfollow_users(self, skip=10, amount=100, sleep_delay=2):
         unfollowed = 0
         failed = 0
         web_address_navigator(Settings, self.browser, "https://twitter.com/" + self.username + "/following")
@@ -577,96 +633,115 @@ class TwitterPy:
                     ceil(sleep_delay * 0.85),
                     ceil(sleep_delay * 1.14))
 
-        while len(rows) < 20:
-            self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            sleep(delay_random)
-            rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
-            print(len(rows), "rows navigated")
-            self.browser.execute_script("window.scrollTo(0, 0);")
+        for i in range(0, skip):
+            self.logger.info("skipped {} rows".format(i))
+            self.browser.execute_script("window.scrollTo(0, " + str(ROW_HEIGHT*i) + ");")
+            sleep(delay_random*0.03)
+
+        # while len(rows) < 20:
+        # self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        # sleep(delay_random)
+        # rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
+        # print(len(rows), "rows navigated")
+            # self.browser.execute_script("window.scrollTo(0, 0);")
+            # sleep(delay_random/2)
 
         sleep(delay_random)
         rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
-        print(len(rows), "rows to be enumerated")
-        self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        sleep(delay_random)
-
+        print("row", skip, "-", skip + len(rows), "to be Collected")
+        profilelinks = []
         for i in range(0, len(rows)):
-            try:
-                self.browser.execute_script("window.scrollTo(0, " + str(ROW_HEIGHT*i) + ");")
-                sleep(delay_random)
-                profilelink_tag = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > a")
-                profilelink = profilelink_tag.get_attribute("href")
+            profilelink_tag = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > a")
+            profilelink = profilelink_tag.get_attribute("href")
+            self.logger.info("Collected=> {}".format(profilelink))
+            sleep(delay_random*0.06)
+            profilelinks.append(profilelink)
 
-                if profilelink.split('/')[3] in self.white_list:
-                    self.logger.info(' {} is in white_list, hence skipping..'.format(profilelink.split('/')[3]))
-                    continue
-
-                self.logger.info(" {} About to unfollow => {} ".format(i, profilelink))
-                button = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span")
-
-                if button.text=='Following':
-                    self.logger.info('Clicking {}'.format(button.text))
-                    button_old_text = button.text
-
-                    (ActionChains(self.browser)
-                     .move_to_element(self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span"))
-                     .perform())
-                    delay_random = random.randint(
-                                ceil(sleep_delay * 0.85),
-                                ceil(sleep_delay * 1.14))
-                    sleep(delay_random)
-
-                    (ActionChains(self.browser)
-                     .click()
-                     .perform())
-                    delay_random = random.randint(
-                                ceil(sleep_delay * 0.85),
-                                ceil(sleep_delay * 1.14))
-                    sleep(delay_random)
-
-
-                    (ActionChains(self.browser)
-                     .move_to_element(self.browser.find_element_by_css_selector("div > div > div > div > div > div > div > div > div > div > div:nth-child(2) > div > span > span"))
-                     .perform())
-                    delay_random = random.randint(
-                                ceil(sleep_delay * 0.85),
-                                ceil(sleep_delay * 1.14))
-                    sleep(delay_random)
-
-                    (ActionChains(self.browser)
-                     .click()
-                     .perform())
-                    delay_random = random.randint(
-                                ceil(sleep_delay * 0.85),
-                                ceil(sleep_delay * 1.14))
-                    sleep(delay_random)
-
-                    if button_old_text == self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text:
-                        failed = failed + 1
-                        self.logger.info('Failed {} times'.format(failed))
-                    else:
-                        unfollowed = unfollowed + 1
-                        print('Button changed to', self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text)
-                else:
-                    self.logger.info('Already {}'.format(button.text))
-                if unfollowed > amount:
-                    break
-            except Exception as e:
-                self.logger.error(e)
-                if ('The element reference of' in str(e) or 'is out of bounds of viewport' in str(e) or 'Web element reference not seen before' in str(e)):
-                    self.logger.info('Returning')
-                    return
-                else:
-                    failed = failed + 1
-                    self.logger.info('Failed {} times'.format(failed))
-                delay_random = random.randint(
-                            ceil(sleep_delay * 0.85),
-                            ceil(sleep_delay * 1.14))
-                sleep(delay_random)
-            if failed >= 6:
-                self.logger.warning('Returning')
-                return
+        for profilelink in profilelinks:
+            if self.visit_and_unfollow(profilelink):
+                unfollowed = unfollowed + 1
+            if unfollowed > amount:
+                break
             self.logger.info('unfollowed in this iteration till now: {}'.format(unfollowed))
+
+
+        # for i in range(0, len(rows)):
+        #     try:
+        #         self.browser.execute_script("window.scrollTo(0, " + str(ROW_HEIGHT*i) + ");")
+        #         sleep(delay_random)
+        #         profilelink_tag = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > a")
+        #         profilelink = profilelink_tag.get_attribute("href")
+
+        #         if profilelink.split('/')[3] in self.white_list:
+        #             self.logger.info(' {} is in white_list, hence skipping..'.format(profilelink.split('/')[3]))
+        #             continue
+
+        #         self.logger.info(" {} About to unfollow => {} ".format(i, profilelink))
+        #         button = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span")
+
+        #         if button.text=='Following':
+        #             self.logger.info('Clicking {}'.format(button.text))
+        #             button_old_text = button.text
+
+        #             (ActionChains(self.browser)
+        #              .move_to_element(self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span"))
+        #              .perform())
+        #             delay_random = random.randint(
+        #                         ceil(sleep_delay * 0.85),
+        #                         ceil(sleep_delay * 1.14))
+        #             sleep(delay_random)
+
+        #             (ActionChains(self.browser)
+        #              .click()
+        #              .perform())
+        #             delay_random = random.randint(
+        #                         ceil(sleep_delay * 0.85),
+        #                         ceil(sleep_delay * 1.14))
+        #             sleep(delay_random)
+
+
+        #             (ActionChains(self.browser)
+        #              .move_to_element(self.browser.find_element_by_css_selector("div > div > div > div > div > div > div > div > div > div > div:nth-child(2) > div > span > span"))
+        #              .perform())
+        #             delay_random = random.randint(
+        #                         ceil(sleep_delay * 0.85),
+        #                         ceil(sleep_delay * 1.14))
+        #             sleep(delay_random)
+
+        #             (ActionChains(self.browser)
+        #              .click()
+        #              .perform())
+        #             delay_random = random.randint(
+        #                         ceil(sleep_delay * 0.85),
+        #                         ceil(sleep_delay * 1.14))
+        #             sleep(delay_random)
+
+        #             if button_old_text == self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text:
+        #                 failed = failed + 1
+        #                 self.logger.info('Failed {} times'.format(failed))
+        #             else:
+        #                 unfollowed = unfollowed + 1
+        #                 print('Button changed to', self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text)
+        #         else:
+        #             self.logger.info('Already {}'.format(button.text))
+        #         if unfollowed > amount:
+        #             break
+        #     except Exception as e:
+        #         self.logger.error(e)
+        #         if ('The element reference of' in str(e) or 'is out of bounds of viewport' in str(e) or 'Web element reference not seen before' in str(e)):
+        #             self.logger.info('Returning')
+        #             return
+        #         else:
+        #             failed = failed + 1
+        #             self.logger.info('Failed {} times'.format(failed))
+        #         delay_random = random.randint(
+        #                     ceil(sleep_delay * 0.85),
+        #                     ceil(sleep_delay * 1.14))
+        #         sleep(delay_random)
+        #     if failed >= 6:
+        #         self.logger.warning('Returning')
+        #         return
+        #     self.logger.info('unfollowed in this iteration till now: {}'.format(unfollowed))
 
     def follow_user_followers(self, users, amount, sleep_delay=2):
         followed = 0
@@ -985,7 +1060,7 @@ def smart_run(session):
             file_path = os.path.join(gettempdir(), log_file)
             with open(file_path, "wb") as fp:
                 fp.write(session.browser.page_source.encode("utf-8"))
-            self.logger.info("{0}\nIf raising an issue, "
+            print("{0}\nIf raising an issue, "
                   "please also upload the file located at:\n{1}\n{0}"
                   .format('*' * 70, file_path))
 

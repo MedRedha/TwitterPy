@@ -17,7 +17,7 @@ pip install -r requirements.txt
 ##  APIs:
   - [Follow usernames given by a list](#Follow-usernames-given-by-a-list)
   - [Follow followers of each of the users from a list](#Follow-followers-of-each-of-the-users-from-a-list)
-  - [Unfollow all](#Unfollow-all)
+  - [Unfollow users](#Unfollow-users)
   - [Send a welcome message](#Send-a-welcome-message)
   - [Retweet the lastest tweet for each of the given users](#Retweet-the-lastest-tweet-for-each-of-the-given-users)
 
@@ -45,14 +45,14 @@ pip install -r requirements.txt
                                   amount=random.randint(30, 60))
  ```
  
-### Unfollow all
+### Unfollow users
 
 ```python
 
  session = TwitterPy()
 
  with smart_run(session):
-     session.unfollow_all(amount=random.randint(30, 60))
+     session.unfollow_users(amount=random.randint(30, 60))
  ```
  
 ### Send a welcome message
