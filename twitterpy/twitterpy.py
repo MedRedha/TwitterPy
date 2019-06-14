@@ -634,7 +634,7 @@ class TwitterPy:
                     ceil(sleep_delay * 1.14))
 
         for i in range(0, skip):
-            self.logger.info("skipped {} rows".format(i))
+            self.logger.info("Skipped => {} rows".format(i))
             self.browser.execute_script("window.scrollTo(0, " + str(ROW_HEIGHT*i) + ");")
             sleep(delay_random*0.03)
 
@@ -653,7 +653,7 @@ class TwitterPy:
         for i in range(0, len(rows)):
             profilelink_tag = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > a")
             profilelink = profilelink_tag.get_attribute("href")
-            self.logger.info("Collected=> {}".format(profilelink))
+            self.logger.info("Collected => {}".format(profilelink))
             sleep(delay_random*0.06)
             profilelinks.append(profilelink)
 

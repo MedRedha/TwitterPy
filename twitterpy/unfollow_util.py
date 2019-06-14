@@ -262,7 +262,6 @@ def get_following_status(browser, track, username, person, person_id, logger,
         ig_homepage = "https://www.twitter.com/"
         web_address_navigator( browser, ig_homepage + person, Settings)
 
-# [3]/div/div[2]/div[2]/div/div[2]/div/div/ul/li[5]
     follow_button_XP = ('//*[@id="page-container"]/div/div/ul/li/div/div/span/button[@type="button"]/span[text()="Follow"]')
     failure_msg = "--> Unable to detect the following status of '{}'!"
     # user_inaccessible_msg = (
