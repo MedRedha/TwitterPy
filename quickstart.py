@@ -21,6 +21,14 @@ with smart_run(session):
     # prepare data
     target_users_4_copying_followers = ['Allroundraja', 'CFCricket_World', 'D11_Devill10', 'Dream11', 'Dream11Hockey', 'Dream11PKL', 'Dream11Players', 'Dream11Tips2', 'Dream11_Expert', 'Dream11_FCG', 'Dream11Help1', 'Dream11pundit', 'DreamerFantasy7', 'fanfight_app', 'Fantasy_Guruu', 'GuruDream11', 'Haiwaaaan', 'HalaPlayDotCom', 'HARMAN055_', 'IAMSANTIY224', 'india_fantasy', 'IPLExpart', 'I_am_RN_', 'KaushalKiVines', 'LeagueAdda', 'LeagueXofficial', 'MGSDREAM11', 'MyTeam_11', 'Mr360j', 'NarayananXi', 'NBAspecialist21', 'Patelvikesh664', 'PlayerzPot', 'PlayMPL', 'PredictKar', 'Royal_D11Family', 'Royalgoyal23', 'TFGfantasySport', 'WizardlyChamp', 'ballebaazi', 'cricket_dream', 'cricketgeekhere', 'cricpick', 'ddguruji', 'dream11', 'dream11champ321', 'dream11cricinfa', 'dream11sj', 'fantasykfcdream', 'fantasypower11', 'fcnupdates', 'imnandhancric', 'kingaadarsh2', 'lfcsrk', 'lootnook', 'mohitsh229', 'nikhilkomalan', 'peeyushsharmaa', 'shivakanaujia11', 'tips_dream11', 'winner_dream11']
     target_users_4_retweeting = ['ABdeVilliers17', 'henrygayle', 'harbhajan_singh', 'StarSportsIndia', 'YUVSTRONG12', 'yuzi_chahal', 'imkuldeep18', 'klrahul11', 'hardikpandya7', 'Jaspritbumrah93', 'CricketNDTV', 'virendersehwag', 'cricketworldcup', 'circleofcricket', 'ICC',  'BCCI', 'CricInformer', 'sachin_rt', 'bhogleharsha', 'cricbuzz', 'sanjaymanjrekar', 'SGanguly99', 'anilkumble1074']
+    comments = [ "Thanks For Connecting.👍😀🙏",
+        "Hi, how are you ?",
+        "Are you into Fantasy Sports",
+        "Sirji, Welcome to Picklively family🙏",
+        "Which is your favorite Fantasy Sports site ?",
+        "Who do you think will win today ?",
+        "Thanks For Following. Happy To Connect.👍😀🙏"
+    ]
 
     number = random.randint(2, 3)
     if len(target_users_4_copying_followers) <= number:
@@ -41,18 +49,11 @@ with smart_run(session):
     session.set_dont_include(target_users_4_copying_followers + target_users_4_retweeting)
 
     # activity
-    if (now.day % 2 == 0 and 5 * followers < following) or following >= 7000:
-        session.unfollow_users(skip = int(following/4), amount=min(int(0.5*following), random.randint(40, 60)))
+    if 5 * followers < following or following >= 7000:
+       for i in range(0, min(4, max(1, int(0.2*following/followers)))):
+           session.unfollow_users(skip = int(following/3), amount=min(int(0.5*following), random.randint(40, 60)))
     # session.follow_by_list(followlist=random_target_users_4_copying_followers, times=1, sleep_delay=600, interact=False)
     session.follow_user_followers(random_target_users_4_copying_followers, amount=random.randint(10, 30))
     # session.follow_likers(random_target_users_4_copying_followers, photos_grab_amount = 2, follow_likers_per_photo = 3, randomize=True, sleep_delay=600, interact=False)
-    comments = [ "Thanks For Connecting.👍😀🙏",
-        "Hi, how are you ?",
-        "Are you into Fantasy Sports",
-        "Sirji, Welcome to Picklively family🙏",
-        "Which is your favorite Fantasy Sports site ?",
-        "Who do you think will win today ?",
-        "Thanks For Following. Happy To Connect.👍😀🙏"
-    ]
     session.welcome_dm(comments[random.randint(0, len(comments)-1)])
     session.retweet_latest(random_target_users_4_retweeting, window_hours=1)

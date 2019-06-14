@@ -67,12 +67,6 @@ class TwitterPy:
         headless_browser = cli_args.headless_browser or headless_browser
         disable_image_load = cli_args.disable_image_load or disable_image_load
 
-        # TWITTERPY_IS_RUNNING = True
-        # workspace must be ready before anything
-        # if not get_workspace(Settings):
-        #     raise SocialPyError(
-        #         "Oh no! I don't have a workspace to work at :'(")
-
         self.browser = None
         self.headless_browser = headless_browser
         self.use_firefox = use_firefox
@@ -250,32 +244,6 @@ class TwitterPy:
         self.white_list = set(friends) or set()
         return self
 
-    # def set_relationship_bounds(self,
-    #                             enabled=None,
-    #                             potency_ratio=None,
-    #                             delimit_by_numbers=None,
-    #                             min_posts=None,
-    #                             max_posts=None,
-    #                             max_followers=None,
-    #                             max_following=None,
-    #                             min_followers=None,
-    #                             min_following=None):
-    #     """Sets the potency ratio and limits to the provide an efficient
-    #     activity between the targeted masses"""
-
-    #     # self.potency_ratio = potency_ratio if enabled is True else None
-    #     # self.delimit_by_numbers = delimit_by_numbers if enabled is True else \
-    #         # None
-
-    #     # self.max_followers = max_followers
-    #     # self.min_followers = min_followers
-
-    #     # self.max_following = max_following
-    #     # self.min_following = min_following
-
-    #     self.min_posts = min_posts if enabled is True else None
-    #     self.max_posts = max_posts if enabled is True else None
-
     def set_user_interact(self,
                           amount=10,
                           percentage=100,
@@ -329,19 +297,22 @@ class TwitterPy:
                     ceil(sleep_delay * 1.14))
 
         scroll_limit = 0
-        while len(rows) < new_followers_cnt and scroll_limit < 10:
-            scroll_limit = scroll_limit + 1
-            self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        try:
+            while len(rows) < new_followers_cnt and scroll_limit < 10:
+                scroll_limit = scroll_limit + 1
+                self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                sleep(delay_random)
+                rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
+                print(len(rows), "rows navigated")
+                self.browser.execute_script("window.scrollTo(0, 0);")
+
             sleep(delay_random)
             rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
-            print(len(rows), "rows navigated")
-            self.browser.execute_script("window.scrollTo(0, 0);")
-
-        sleep(delay_random)
-        rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
-        print(len(rows), "rows to be enumerated")
-        self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        sleep(delay_random)
+            print(len(rows), "rows to be enumerated")
+            self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            sleep(delay_random)
+        except Exception as e:
+            self.logger.error(e)
 
         user_names = []
 
@@ -443,126 +414,29 @@ class TwitterPy:
                 sleep(delay_random)
                 break
             except Exception as e:
-                self.logger.info("Still not visible, scrolling further down")
+                self.logger.info("Still not visible, scrolling down further")
 
     def retweet_latest(self, users, window_hours=1, sleep_delay=2):
         for user in users:
             web_address_navigator(Settings, self.browser, "https://twitter.com/" + user)
-            latest_tweet_time_info = self.browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div > div > div > section > div > div > div > div > div > div > article > div > div:nth-child(2) > div > div:nth-child(1) > div:nth-child(1) > a > time")
-            self.logger.info(user)
-            self.logger.info(latest_tweet_time_info.text)
-            if "m" in latest_tweet_time_info.text:
-                self.retweet_it(sleep_delay)
-            else:
-                if "h" in latest_tweet_time_info.text:
-                    hrs = int(latest_tweet_time_info.text.strip()[:-1])
-                    if hrs <= window_hours:
-                        self.retweet_it(sleep_delay)
-                    else:
-                        self.logger.info("More than {} hour(s) old".format(str(hrs)))
+            try:
+                latest_tweet_time_info = self.browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div > div > div > section > div > div > div > div > div > div > article > div > div:nth-child(2) > div > div:nth-child(1) > div:nth-child(1) > a > time")
+                self.logger.info(user)
+                self.logger.info(latest_tweet_time_info.text)
+                if "m" in latest_tweet_time_info.text:
+                    self.retweet_it(sleep_delay)
                 else:
-                    self.logger.info("Might be days old")
+                    if "h" in latest_tweet_time_info.text:
+                        hrs = int(latest_tweet_time_info.text.strip()[:-1])
+                        if hrs <= window_hours:
+                            self.retweet_it(sleep_delay)
+                        else:
+                            self.logger.info("More than {} hour(s) old".format(str(hrs)))
+                    else:
+                        self.logger.info("Might be days old")
+            except Exception as e:
+                self.logger.error(e)
             self.logger.info("======")
-
-    # def follow_user(self, browser, track, login, userid_to_follow, button, blacklist,
-    #                 logger, logfolder, Settings):
-    #     """ Follow a user either from the profile page or post page or dialog
-    #     box """
-    #     # list of available tracks to follow in: ["profile", "post" "dialog"]
-
-    #     # check action availability
-    #     if quota_supervisor(Settings, "follows") == "jump":
-    #         return False, "jumped"
-
-    #     if track in ["profile", "post"]:
-    #         if track == "profile":
-    #             # check URL of the webpage, if it already is user's profile
-    #             # page, then do not navigate to it again
-    #             user_link = "https://www.twitter.com/{}/".format(userid_to_follow)
-    #             web_address_navigator( browser, user_link, Settings)
-
-    #         # find out CURRENT following status
-    #         following_status, follow_button = \
-    #             get_following_status(browser,
-    #                                 track,
-    #                                 login,
-    #                                 userid_to_follow,
-    #                                 None,
-    #                                 logger,
-    #                                 logfolder)
-    #         if following_status in ["Follow", "Follow Back"]:
-    #             click_visibly(browser, Settings, follow_button)  # click to follow
-    #             follow_state, msg = verify_action(browser, "follow", track, login,
-    #                                             userid_to_follow, None, logger,
-    #                                             logfolder)
-    #             if follow_state is not True:
-    #                 return False, msg
-
-    #         elif following_status in ["Following", "Requested"]:
-    #             if following_status == "Following":
-    #                 logger.info(
-    #                     "--> Already following '{}'!\n".format(userid_to_follow))
-
-    #             elif following_status == "Requested":
-    #                 logger.info("--> Already requested '{}' to follow!\n".format(
-    #                     userid_to_follow))
-
-    #             sleep(1)
-    #             return False, "already followed"
-
-    #         elif following_status in ["Unblock", "UNAVAILABLE"]:
-    #             if following_status == "Unblock":
-    #                 failure_msg = "user is in block"
-
-    #             elif following_status == "UNAVAILABLE":
-    #                 failure_msg = "user is inaccessible"
-
-    #             logger.warning(
-    #                 "--> Couldn't follow '{}'!\t~{}".format(userid_to_follow,
-    #                                                         failure_msg))
-    #             return False, following_status
-
-    #         elif following_status is None:
-    #             # TODO:BUG:2nd login has to be fixed with userid of loggedin user
-    #             sirens_wailing, emergency_state = emergency_exit(browser, Settings, "https://www.twitter.com", login,
-    #                                                             login, logger, logfolder)
-    #             if sirens_wailing is True:
-    #                 return False, emergency_state
-
-    #             else:
-    #                 logger.warning(
-    #                     "--> Couldn't unfollow '{}'!\t~unexpected failure".format(
-    #                         userid_to_follow))
-    #                 return False, "unexpected failure"
-    #     elif track == "dialog":
-    #         click_element(browser, Settings, button)
-    #         sleep(3)
-
-    #     # general tasks after a successful follow
-    #     logger.info("--> Followed '{}'!".format(userid_to_follow.encode("utf-8")))
-    #     update_activity('follows', Settings)
-
-    #     # get user ID to record alongside username
-    #     user_id = get_user_id(browser, track, userid_to_follow, logger)
-
-    #     logtime = datetime.now().strftime('%Y-%m-%d %H:%M')
-    #     log_followed_pool(login, userid_to_follow, logger,
-    #                     logfolder, logtime, user_id)
-
-    #     follow_restriction("write", userid_to_follow, None, logger)
-
-    #     # if blacklist['enabled'] is True:
-    #     #     action = 'followed'
-    #     #     add_user_to_blacklist(userid_to_follow,
-    #     #                         blacklist['campaign'],
-    #     #                         action,
-    #     #                         logger,
-    #     #                         logfolder)
-
-    #     # get the post-follow delay time to sleep
-    #     naply = get_action_delay("follow", Settings)
-    #     sleep(naply)
-    #     return True, "success"
 
     def get_relationship_counts(self):
         return get_relationship_counts(self.browser, self.username, self.logger)
@@ -622,126 +496,41 @@ class TwitterPy:
             self.logger.info('Already {}'.format(button.text))
         return False
 
-
     def unfollow_users(self, skip=10, amount=100, sleep_delay=2):
-        unfollowed = 0
-        failed = 0
-        web_address_navigator(Settings, self.browser, "https://twitter.com/" + self.username + "/following")
-        rows = []
-        self.logger.info('Browsing followings of {}'.format(self.username))
-        delay_random = random.randint(
-                    ceil(sleep_delay * 0.85),
-                    ceil(sleep_delay * 1.14))
+        try:
+            unfollowed = 0
+            failed = 0
+            web_address_navigator(Settings, self.browser, "https://twitter.com/" + self.username + "/following")
+            rows = []
+            self.logger.info('Browsing followings of {}'.format(self.username))
+            delay_random = random.randint(
+                        ceil(sleep_delay * 0.85),
+                        ceil(sleep_delay * 1.14))
 
-        for i in range(0, skip):
-            self.logger.info("Skipped => {} rows".format(i))
-            self.browser.execute_script("window.scrollTo(0, " + str(ROW_HEIGHT*i) + ");")
-            sleep(delay_random*0.03)
+            for i in range(0, skip):
+                self.logger.info("Skipped => {} rows".format(i))
+                self.browser.execute_script("window.scrollTo(0, " + str(ROW_HEIGHT*i) + ");")
+                sleep(delay_random*0.03)
 
-        # while len(rows) < 20:
-        # self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        # sleep(delay_random)
-        # rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
-        # print(len(rows), "rows navigated")
-            # self.browser.execute_script("window.scrollTo(0, 0);")
-            # sleep(delay_random/2)
+            sleep(delay_random)
+            rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
+            print("row", skip, "-", skip + len(rows), "to be Collected")
+            profilelinks = []
+            for i in range(0, len(rows)):
+                profilelink_tag = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > a")
+                profilelink = profilelink_tag.get_attribute("href")
+                self.logger.info("Collected => {}".format(profilelink))
+                sleep(delay_random*0.06)
+                profilelinks.append(profilelink)
 
-        sleep(delay_random)
-        rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
-        print("row", skip, "-", skip + len(rows), "to be Collected")
-        profilelinks = []
-        for i in range(0, len(rows)):
-            profilelink_tag = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > a")
-            profilelink = profilelink_tag.get_attribute("href")
-            self.logger.info("Collected => {}".format(profilelink))
-            sleep(delay_random*0.06)
-            profilelinks.append(profilelink)
-
-        for profilelink in profilelinks:
-            if self.visit_and_unfollow(profilelink):
-                unfollowed = unfollowed + 1
-            if unfollowed > amount:
-                break
-            self.logger.info('unfollowed in this iteration till now: {}'.format(unfollowed))
-
-
-        # for i in range(0, len(rows)):
-        #     try:
-        #         self.browser.execute_script("window.scrollTo(0, " + str(ROW_HEIGHT*i) + ");")
-        #         sleep(delay_random)
-        #         profilelink_tag = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > a")
-        #         profilelink = profilelink_tag.get_attribute("href")
-
-        #         if profilelink.split('/')[3] in self.white_list:
-        #             self.logger.info(' {} is in white_list, hence skipping..'.format(profilelink.split('/')[3]))
-        #             continue
-
-        #         self.logger.info(" {} About to unfollow => {} ".format(i, profilelink))
-        #         button = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span")
-
-        #         if button.text=='Following':
-        #             self.logger.info('Clicking {}'.format(button.text))
-        #             button_old_text = button.text
-
-        #             (ActionChains(self.browser)
-        #              .move_to_element(self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span"))
-        #              .perform())
-        #             delay_random = random.randint(
-        #                         ceil(sleep_delay * 0.85),
-        #                         ceil(sleep_delay * 1.14))
-        #             sleep(delay_random)
-
-        #             (ActionChains(self.browser)
-        #              .click()
-        #              .perform())
-        #             delay_random = random.randint(
-        #                         ceil(sleep_delay * 0.85),
-        #                         ceil(sleep_delay * 1.14))
-        #             sleep(delay_random)
-
-
-        #             (ActionChains(self.browser)
-        #              .move_to_element(self.browser.find_element_by_css_selector("div > div > div > div > div > div > div > div > div > div > div:nth-child(2) > div > span > span"))
-        #              .perform())
-        #             delay_random = random.randint(
-        #                         ceil(sleep_delay * 0.85),
-        #                         ceil(sleep_delay * 1.14))
-        #             sleep(delay_random)
-
-        #             (ActionChains(self.browser)
-        #              .click()
-        #              .perform())
-        #             delay_random = random.randint(
-        #                         ceil(sleep_delay * 0.85),
-        #                         ceil(sleep_delay * 1.14))
-        #             sleep(delay_random)
-
-        #             if button_old_text == self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text:
-        #                 failed = failed + 1
-        #                 self.logger.info('Failed {} times'.format(failed))
-        #             else:
-        #                 unfollowed = unfollowed + 1
-        #                 print('Button changed to', self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text)
-        #         else:
-        #             self.logger.info('Already {}'.format(button.text))
-        #         if unfollowed > amount:
-        #             break
-        #     except Exception as e:
-        #         self.logger.error(e)
-        #         if ('The element reference of' in str(e) or 'is out of bounds of viewport' in str(e) or 'Web element reference not seen before' in str(e)):
-        #             self.logger.info('Returning')
-        #             return
-        #         else:
-        #             failed = failed + 1
-        #             self.logger.info('Failed {} times'.format(failed))
-        #         delay_random = random.randint(
-        #                     ceil(sleep_delay * 0.85),
-        #                     ceil(sleep_delay * 1.14))
-        #         sleep(delay_random)
-        #     if failed >= 6:
-        #         self.logger.warning('Returning')
-        #         return
-        #     self.logger.info('unfollowed in this iteration till now: {}'.format(unfollowed))
+            for profilelink in profilelinks:
+                if self.visit_and_unfollow(profilelink):
+                    unfollowed = unfollowed + 1
+                if unfollowed > amount:
+                    break
+                self.logger.info('unfollowed in this iteration till now: {}'.format(unfollowed))
+        except Exception as e:
+            print(e)
 
     def follow_user_followers(self, users, amount, sleep_delay=2):
         followed = 0
@@ -750,15 +539,18 @@ class TwitterPy:
             web_address_navigator(Settings, self.browser, "https://twitter.com/" + user + "/followers")
             rows = []
             self.logger.info('Browsing followers of {}'.format(user))
-            while len(rows) < 10:
-                self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                delay_random = random.randint(
-                            ceil(sleep_delay * 0.85),
-                            ceil(sleep_delay * 1.14))
-                sleep(delay_random)
-                rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
-                print(len(rows))
-                self.browser.execute_script("window.scrollTo(0, 0);")
+            try:
+                while len(rows) < 10:
+                    self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    delay_random = random.randint(
+                                ceil(sleep_delay * 0.85),
+                                ceil(sleep_delay * 1.14))
+                    sleep(delay_random)
+                    rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
+                    print(len(rows))
+                    self.browser.execute_script("window.scrollTo(0, 0);")
+            except Exception as e:
+                self.logger.error(e)
 
             for i, row in enumerate(rows):
                 try:
@@ -817,31 +609,11 @@ class TwitterPy:
         """Allows to follow by any scrapped list"""
         if not isinstance(followlist, list):
             followlist = [followlist]
-
-        # if self.aborting:
-        #     self.logger.info(">>> self aborting prevented")
-        #     # return self
-
-        # standalone means this feature is started by the user
-        # standalone = True if "follow_by_list" not in \
-        #                      self.internal_usage.keys() else False
-        # skip validation in case of it is already accomplished
-        # users_validated = True if not standalone and not \
-        #     self.internal_usage["follow_by_list"]["validate"] else False
-
         self.follow_times = times or 0
 
         followed_all = 0
         followed_new = 0
         already_followed = 0
-        # not_valid_users = 0
-
-        # hold the current global values for differentiating at the end
-        # liked_init = self.liked_img
-        # already_liked_init = self.already_liked
-        # commented_init = self.commented
-        # inap_img_init = self.inap_img
-
         relax_point = random.randint(7, 14)  # you can use some plain value
         # `10` instead of this quitely randomized score
         # self.quotient_breach = False
@@ -863,15 +635,6 @@ class TwitterPy:
                                   self.logger):
                 self.logger.info('')
                 continue
-
-            # if not users_validated:
-            #     # Verify if the user should be followed
-            #     validation, details = self.validate_user_call(acc_to_follow)
-            #     if validation is not True or acc_to_follow == self.username:
-            #         self.logger.info(
-            #             "--> Not a valid user: {}".format(details))
-            #         not_valid_users += 1
-            #         continue
 
             # Take a break after a good following
             if followed_new >= relax_point:
@@ -940,28 +703,6 @@ class TwitterPy:
                     self.jumps["consequent"]["follows"] += 1
 
                 sleep(1)
-
-        # if standalone:# print only for external usage (internal callers
-        #     # have their printers)
-        #     self.logger.info("Finished following by List!\n")
-        #     # print summary
-        #     self.logger.info("Followed: {}".format(followed_all))
-        #     self.logger.info("Already followed: {}".format(already_followed))
-        #     self.logger.info("Not valid users: {}".format(not_valid_users))
-
-        #     if interact is True:
-        #         self.logger.info('')
-        #         # find the feature-wide action sizes by taking a difference
-        #         liked = (self.liked_img - liked_init)
-        #         already_liked = (self.already_liked - already_liked_init)
-        #         commented = (self.commented - commented_init)
-        #         inap_img = (self.inap_img - inap_img_init)
-
-        #         # print the summary out of interactions
-        #         self.logger.info("Liked: {}".format(liked))
-        #         self.logger.info("Already Liked: {}".format(already_liked))
-        #         self.logger.info("Commented: {}".format(commented))
-        #         self.logger.info("Inappropriate: {}".format(inap_img))
 
         # always sum up general objects regardless of the request size
         self.followed += followed_all
