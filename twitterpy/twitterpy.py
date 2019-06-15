@@ -442,59 +442,58 @@ class TwitterPy:
         return get_relationship_counts(self.browser, self.username, self.logger)
 
     def visit_and_unfollow(self, profilelink, sleep_delay=2):
-        web_address_navigator(Settings, self.browser,profilelink)
-        self.logger.info('Visiting {}'.format(profilelink))
-        button = self.browser.find_element_by_css_selector("div > div > div > div > div > div > div > div > div:nth-child(1) > div > div > div > div > div > div > div > span")
-        # for button in buttons:
-        #     print('button.text', button.text)
-        # button = buttons[0]
-        if button.text.strip()=='Following':
-            self.logger.info('Clicking {}'.format(button.text))
-            button_old_text = button.text.strip()
+        try:
+            web_address_navigator(Settings, self.browser,profilelink)
+            self.logger.info('Visiting {}'.format(profilelink))
+            button = self.browser.find_element_by_css_selector("div > div > div > div > div > div > div > div > div:nth-child(1) > div > div > div > div > div > div > div > span")
+            if button.text.strip()=='Following':
+                self.logger.info('Clicking {}'.format(button.text))
+                button_old_text = button.text.strip()
 
-            (ActionChains(self.browser)
-             .move_to_element(button)#self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span"))
-             .perform())
-            delay_random = random.randint(
-                        ceil(sleep_delay * 0.85),
-                        ceil(sleep_delay * 1.14))
-            sleep(delay_random)
+                (ActionChains(self.browser)
+                 .move_to_element(button)#self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span"))
+                 .perform())
+                delay_random = random.randint(
+                            ceil(sleep_delay * 0.85),
+                            ceil(sleep_delay * 1.14))
+                sleep(delay_random)
 
-            (ActionChains(self.browser)
-             .click()
-             .perform())
-            delay_random = random.randint(
-                        ceil(sleep_delay * 0.85),
-                        ceil(sleep_delay * 1.14))
-            sleep(delay_random)
+                (ActionChains(self.browser)
+                 .click()
+                 .perform())
+                delay_random = random.randint(
+                            ceil(sleep_delay * 0.85),
+                            ceil(sleep_delay * 1.14))
+                sleep(delay_random)
 
+                (ActionChains(self.browser)
+                 .move_to_element(self.browser.find_element_by_css_selector("div > div > div > div > div > div > div > div > div > div > div:nth-child(2) > div > span > span"))
+                 .perform())
+                delay_random = random.randint(
+                            ceil(sleep_delay * 0.85),
+                            ceil(sleep_delay * 1.14))
+                sleep(delay_random)
 
-            (ActionChains(self.browser)
-             .move_to_element(self.browser.find_element_by_css_selector("div > div > div > div > div > div > div > div > div > div > div:nth-child(2) > div > span > span"))
-             .perform())
-            delay_random = random.randint(
-                        ceil(sleep_delay * 0.85),
-                        ceil(sleep_delay * 1.14))
-            sleep(delay_random)
+                (ActionChains(self.browser)
+                 .click()
+                 .perform())
+                delay_random = random.randint(
+                            ceil(sleep_delay * 0.85),
+                            ceil(sleep_delay * 1.14))
+                sleep(delay_random)
 
-            (ActionChains(self.browser)
-             .click()
-             .perform())
-            delay_random = random.randint(
-                        ceil(sleep_delay * 0.85),
-                        ceil(sleep_delay * 1.14))
-            sleep(delay_random)
-
-            if button_old_text == button.text.strip():
-                failed = failed + 1
-                self.logger.info('Failed {} times'.format(failed))
+                if button_old_text == button.text.strip():
+                    failed = failed + 1
+                    self.logger.info('Failed {} times'.format(failed))
+                else:
+                    # unfollowed = unfollowed + 1
+                    print('Button changed to', button.text)
+                    return True
             else:
-                # unfollowed = unfollowed + 1
-                print('Button changed to', button.text)
-                return True
-        else:
-            self.logger.info('Already {}'.format(button.text))
-        return False
+                self.logger.info('Already {}'.format(button.text))
+            return False
+        except Exception as e:
+            self.logger.error(e)
 
     def unfollow_users(self, skip=10, amount=100, sleep_delay=2):
         try:
