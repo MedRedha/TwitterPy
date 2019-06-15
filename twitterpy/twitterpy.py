@@ -525,9 +525,10 @@ class TwitterPy:
             for profilelink in profilelinks:
                 if self.visit_and_unfollow(profilelink):
                     unfollowed = unfollowed + 1
-                if unfollowed > amount:
-                    break
                 self.logger.info('unfollowed in this iteration till now: {}'.format(unfollowed))
+                if unfollowed > amount:
+                    self.logger.info('Unfollowed too many times this hour. Returning')
+                    return
         except Exception as e:
             print(e)
 
