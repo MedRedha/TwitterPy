@@ -599,7 +599,7 @@ class TwitterPy:
                     sleep(delay_random)
                 self.browser.execute_script("window.scrollTo(0, " + str((i+1)*ROW_HEIGHT) + ");")
                 if failed >= 6:
-                    self.logger.info('Returning')
+                    self.logger.info('Failed too many times. Something is wrong. Returning')
                     return
             self.logger.info('followed in this iteration till now: {}'.format(followed))
 
