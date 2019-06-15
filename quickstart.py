@@ -52,8 +52,6 @@ with smart_run(session):
     if 5 * followers < following or following >= 7000:
        for i in range(0, min(4, max(1, int(0.2*following/followers)))):
            session.unfollow_users(skip = int(following/3), amount=min(int(0.5*following), random.randint(40, 60)))
-    # session.follow_by_list(followlist=random_target_users_4_copying_followers, times=1, sleep_delay=600, interact=False)
     session.follow_user_followers(random_target_users_4_copying_followers, amount=random.randint(10, 30))
-    # session.follow_likers(random_target_users_4_copying_followers, photos_grab_amount = 2, follow_likers_per_photo = 3, randomize=True, sleep_delay=600, interact=False)
     session.welcome_dm(comments[random.randint(0, len(comments)-1)])
     session.retweet_latest(random_target_users_4_retweeting, window_hours=1)
