@@ -20,6 +20,7 @@ pip install -r requirements.txt
   - [Unfollow users](#Unfollow-users)
   - [Send a welcome message](#Send-a-welcome-message)
   - [Retweet the lastest tweet for each of the given users](#Retweet-the-lastest-tweet-for-each-of-the-given-users)
+  - [Search and Retweet](#Search-and-Retweet)
 
 ### Follow usernames given by a list
  
@@ -74,6 +75,17 @@ pip install -r requirements.txt
 
  with smart_run(session):
      session.retweet_latest(self, users_list, window_hours=1, sleep_delay=2)
+ ```
+
+
+### Search and Retweet
+
+```python
+
+ session = TwitterPy()
+
+ with smart_run(session):
+     session.search_and_retweet(self, query="Retweet to win", sleep_delay=2)
  ```
  
 ## How to run:

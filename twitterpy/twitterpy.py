@@ -377,7 +377,46 @@ class TwitterPy:
             except Exception as e:
                 self.logger.error(e)
 
-    def retweet_it(self, sleep_delay=2):
+    def retweet_latest_from_status(self, sleep_delay=2):
+        self.logger.info("Seems recent, Retweeting...")
+        delay_random = random.randint(
+                    ceil(sleep_delay * 0.85),
+                    ceil(sleep_delay * 1.14))
+
+        for i in range(1, 5):
+            sleep(delay_random)
+            self.browser.execute_script("window.scrollTo(0, 200*" + str(i) + ");")
+            sleep(delay_random)
+            try:
+                retweet_button = self.browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > section > div > div > div > div:nth-child(1) > div > article > div > div:nth-child(2) > div > div > div > svg > g > path")
+                (ActionChains(self.browser)
+                 .move_to_element(retweet_button)
+                 .perform())
+                sleep(delay_random)
+
+                (ActionChains(self.browser)
+                 .click()
+                 .perform())
+                self.logger.info("Retweet clicked")
+                sleep(delay_random)
+
+                #TODO: This is a hack.Since retweet popup opens exact over the button this is working
+                retweet_inside_popup = self.browser.find_element_by_css_selector("div > div > div > div > div > div:nth-child(2) > div > div > div > div > div:nth-child(1)")
+                (ActionChains(self.browser)
+                 .move_to_element(retweet_inside_popup)
+                 .perform())
+                sleep(delay_random)
+
+                (ActionChains(self.browser)
+                 .click()
+                 .perform())
+                self.logger.info("Retweet popup clicked")
+                sleep(delay_random)
+                break
+            except Exception as e:
+                self.logger.info("Still not visible, scrolling down further")
+
+    def retweet_latest_from_profile(self, sleep_delay=2):
         self.logger.info("Seems recent, Retweeting...")
         delay_random = random.randint(
                     ceil(sleep_delay * 0.85),
@@ -416,6 +455,23 @@ class TwitterPy:
             except Exception as e:
                 self.logger.info("Still not visible, scrolling down further")
 
+    def search_and_retweet(self, query, sleep_delay=2):
+        web_address_navigator(Settings, self.browser, "https://twitter.com/search?q=" + query.replace(' ',"%20") + "&src=typd&f=live")
+        elements = self.browser.find_elements_by_css_selector("article")
+        print("Now Count = ", len(elements))
+        hrefs = []
+        for element in elements:
+            links = element.find_elements_by_css_selector("a")
+            for link in links:
+                href =link.get_attribute('href')
+                if '/status/' in href:
+                    hrefs.append(href)
+            print("====")
+        for href in hrefs:
+            web_address_navigator(Settings, self.browser, href)
+            print("Retweeting => {} ".format(href))
+            self.retweet_latest_from_status(sleep_delay=sleep_delay)
+
     def retweet_latest(self, users, window_hours=1, sleep_delay=2):
         for user in users:
             web_address_navigator(Settings, self.browser, "https://twitter.com/" + user)
@@ -424,12 +480,12 @@ class TwitterPy:
                 self.logger.info(user)
                 self.logger.info(latest_tweet_time_info.text)
                 if "m" in latest_tweet_time_info.text:
-                    self.retweet_it(sleep_delay)
+                    self.retweet_latest_from_profile(sleep_delay)
                 else:
                     if "h" in latest_tweet_time_info.text:
                         hrs = int(latest_tweet_time_info.text.strip()[:-1])
                         if hrs <= window_hours:
-                            self.retweet_it(sleep_delay)
+                            self.retweet_latest_from_profile(sleep_delay)
                         else:
                             self.logger.info("More than {} hour(s) old".format(str(hrs)))
                     else:
