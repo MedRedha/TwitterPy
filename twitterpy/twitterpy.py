@@ -796,8 +796,10 @@ class TwitterPy:
 @contextmanager
 def smart_run(session):
     try:
-        session.login()
-        yield
+        if session.login():
+            yield
+        else:
+            print("Not proceeding as login failed")
 
     except (Exception, KeyboardInterrupt) as exc:
         if isinstance(exc, NoSuchElementException):
