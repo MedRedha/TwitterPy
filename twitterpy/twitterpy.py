@@ -144,7 +144,7 @@ class TwitterPy:
             file_handler.setLevel(logging.DEBUG)
             extra = {"username": self.username}
             logger_formatter = logging.Formatter(
-                '%(levelname)s [%(asctime)s] [%(username)s]  %(message)s',
+                '%(levelname)s [%(asctime)s] [TwitterPy:%(username)s]  %(message)s',
                 datefmt='%Y-%m-%d %H:%M:%S')
             file_handler.setFormatter(logger_formatter)
             logger.addHandler(file_handler)
@@ -551,7 +551,7 @@ class TwitterPy:
         except Exception as e:
             self.logger.error(e)
 
-    def unfollow_users(self, skip=10, amount=100, sleep_delay=2):
+    def unfollow_users(self, skip=10, amount=20, sleep_delay=2):
         try:
             unfollowed = 0
             failed = 0
