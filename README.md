@@ -99,3 +99,7 @@ pip install -r requirements.txt
 ```bash
     */10 * * * * bash /path/to/TwitterPy/run_githubpy_only_once_for_mac.sh /path/to/TwitterPy/quickstart.py $USERNAME $PASSWORD
 ```
+
+## Help build socialbotspy
+Check out this short guide on [how to start contributing!](https://github.com/InstaPy/instapy-docs/blob/master/CONTRIBUTORS.md).
+
