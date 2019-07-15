@@ -543,7 +543,7 @@ class TwitterPy:
                     self.logger.info('Failed {} times'.format(failed))
                 else:
                     # unfollowed = unfollowed + 1
-                    self.logger.info('Button changed to', button.text)
+                    self.logger.info('Button changed to {}'.format(button.text))
                     return True
             else:
                 self.logger.info('Already {}'.format(button.text))
