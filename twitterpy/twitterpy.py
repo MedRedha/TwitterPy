@@ -303,12 +303,12 @@ class TwitterPy:
                 self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 sleep(delay_random)
                 rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
-                print(len(rows), "rows navigated")
+                self.logger.info("{} rows navigated".format(len(rows)))
                 self.browser.execute_script("window.scrollTo(0, 0);")
 
             sleep(delay_random)
             rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
-            print(len(rows), "rows to be enumerated")
+            self.logger.info("{} rows to be enumerated".format(len(rows)))
             self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             sleep(delay_random)
         except Exception as e:
@@ -365,7 +365,7 @@ class TwitterPy:
                     sleep(delay_random)
 
                     self.logger.info("To: {} ".format(user_name))
-                    print("Sent:", message)
+                    self.logger.info("Sent: {}".format(message))
                     dm_restriction("write", user_name, None, self.logger)
                     dm_cnt = dm_cnt + 1
                 else:
@@ -458,7 +458,7 @@ class TwitterPy:
     def search_and_retweet(self, query, sleep_delay=2):
         web_address_navigator(Settings, self.browser, "https://twitter.com/search?q=" + query.replace(' ',"%20") + "&src=typd&f=live")
         elements = self.browser.find_elements_by_css_selector("article")
-        print("Now Count = ", len(elements))
+        self.logger.info("Now Count = {}".format(len(elements)))
         hrefs = []
         for element in elements:
             links = element.find_elements_by_css_selector("a")
@@ -466,10 +466,10 @@ class TwitterPy:
                 href =link.get_attribute('href')
                 if '/status/' in href:
                     hrefs.append(href)
-            print("====")
+            self.logger.info("====")
         for href in hrefs:
             web_address_navigator(Settings, self.browser, href)
-            print("Retweeting => {} ".format(href))
+            self.logger.info("Retweeting => {} ".format(href))
             self.retweet_latest_from_status(sleep_delay=sleep_delay)
 
     def retweet_latest(self, users, window_hours=1, sleep_delay=2):
@@ -543,7 +543,7 @@ class TwitterPy:
                     self.logger.info('Failed {} times'.format(failed))
                 else:
                     # unfollowed = unfollowed + 1
-                    print('Button changed to', button.text)
+                    self.logger.info('Button changed to', button.text)
                     return True
             else:
                 self.logger.info('Already {}'.format(button.text))
@@ -569,7 +569,7 @@ class TwitterPy:
 
             sleep(delay_random)
             rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
-            print("row", skip, "-", skip + len(rows), "to be Collected")
+            self.logger.info("row {} - {} to be Collected".format(skip, skip+len(rows)))
             profilelinks = []
             for i in range(0, len(rows)):
                 profilelink_tag = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > a")
@@ -586,7 +586,7 @@ class TwitterPy:
                     self.logger.info('Unfollowed too many times this hour. Returning')
                     return
         except Exception as e:
-            print(e)
+            self.logger.error(e)
 
     def follow_user_followers(self, users, amount, sleep_delay=2):
         followed = 0
@@ -603,7 +603,7 @@ class TwitterPy:
                                 ceil(sleep_delay * 1.14))
                     sleep(delay_random)
                     rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
-                    print(len(rows))
+                    self.logger.info(len(rows))
                     self.browser.execute_script("window.scrollTo(0, 0);")
             except Exception as e:
                 self.logger.error(e)
@@ -639,7 +639,7 @@ class TwitterPy:
                             self.logger.info('Failed {} times'.format(failed))
                         else:
                             followed = followed + 1
-                            print('Button changed to', self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text)
+                            self.logger.info('Button changed to {}'.format(self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > div > div > div > span > span").text))
                             sleep(delay_random*3)
                     else:
                         self.logger.info('Already {}'.format(button.text))
@@ -855,7 +855,7 @@ def smart_run(session):
         if session.login():
             yield
         else:
-            print("Not proceeding as login failed")
+            self.logger.info("Not proceeding as login failed")
 
     except (Exception, KeyboardInterrupt) as exc:
         if isinstance(exc, NoSuchElementException):
@@ -864,7 +864,7 @@ def smart_run(session):
             file_path = os.path.join(gettempdir(), log_file)
             with open(file_path, "wb") as fp:
                 fp.write(session.browser.page_source.encode("utf-8"))
-            print("{0}\nIf raising an issue, "
+            self.logger.info("{0}\nIf raising an issue, "
                   "please also upload the file located at:\n{1}\n{0}"
                   .format('*' * 70, file_path))
 
