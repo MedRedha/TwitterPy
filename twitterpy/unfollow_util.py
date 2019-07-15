@@ -231,14 +231,6 @@ def follow_user(browser, track, login, userid_to_follow, button, blacklist,
 
     follow_restriction("write", userid_to_follow, None, logger)
 
-    # if blacklist['enabled'] is True:
-    #     action = 'followed'
-    #     add_user_to_blacklist(userid_to_follow,
-    #                           blacklist['campaign'],
-    #                           action,
-    #                           logger,
-    #                           logfolder)
-
     # get the post-follow delay time to sleep
     naply = get_action_delay("follow", Settings)
     sleep(naply)
@@ -264,29 +256,6 @@ def get_following_status(browser, track, username, person, person_id, logger,
 
     follow_button_XP = ('//*[@id="page-container"]/div/div/ul/li/div/div/span/button[@type="button"]/span[text()="Follow"]')
     failure_msg = "--> Unable to detect the following status of '{}'!"
-    # user_inaccessible_msg = (
-    #     "Couldn't access the profile page of '{}'!\t~might have changed the"
-    #     " username".format(person))
-
-    # check if the page is available
-    # valid_page = is_page_available(browser, logger, Settings)
-    # if not valid_page:
-    #     logger.warning(user_inaccessible_msg)
-    #     person_new = verify_username_by_id(browser,
-    #                                        username,
-    #                                        person,
-    #                                        None,
-    #                                        logger,
-    #                                        logfolder)
-    #     if person_new:
-    #         web_address_navigator( browser, ig_homepage + person_new, Settings)
-    #         valid_page = is_page_available(browser, logger, Settings)
-    #         if not valid_page:
-    #             logger.error(failure_msg.format(person_new.encode("utf-8")))
-    #             return "UNAVAILABLE", None
-    #     else:
-    #         logger.error(failure_msg.format(person.encode("utf-8")))
-    #         return "UNAVAILABLE", None
 
     # wait until the follow button is located and visible, then get it
     follow_button = explicit_wait(browser, "VOEL", [follow_button_XP, "XPath"], logger, 7, False)

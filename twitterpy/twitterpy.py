@@ -10,12 +10,10 @@ from .settings import Settings
 
 from .unfollow_util  import follow_restriction
 from .unfollow_util  import dm_restriction
-# from .unfollow_util  import unfollow_user
 from .unfollow_util  import follow_user
 
 from contextlib import contextmanager
 from tempfile import gettempdir
-import pprint as pp
 
 from socialcommons.print_log_writer import log_follower_num
 from socialcommons.print_log_writer import log_following_num
@@ -24,7 +22,6 @@ from .util import parse_cli_args
 from .util import interruption_handler
 from .util import highlight_print
 from .util import truncate_float
-from .util import format_number
 from .util import web_address_navigator
 from .util import save_account_progress
 from .util import get_relationship_counts
@@ -32,7 +29,6 @@ from .util import get_relationship_counts
 from socialcommons.time_util import sleep
 
 from socialcommons.browser import close_browser
-# from socialcommons.file_manager import get_workspace
 from socialcommons.file_manager import get_logfolder
 from socialcommons.browser import set_selenium_local_session
 
@@ -81,18 +77,12 @@ class TwitterPy:
         self.browser_profile_path = browser_profile_path
 
         self.page_delay = page_delay
-        # self.switch_language = True
         self.followed = 0
-        # self.already_followed = 0
         self.followed_by = 0
         self.following_num = 0
 
         self.follow_times = 1
         self.do_follow = False
-        # self.follow_percentage = 0
-
-        # self.liked_img = 0
-        # self.already_liked = 0
 
         self.dont_include = set()
         self.white_list = set()
@@ -102,14 +92,6 @@ class TwitterPy:
         self.user_interact_percentage = 0
         self.user_interact_random = False
 
-        # self.max_followers = None   # 90000
-        # self.max_following = None   # 66834
-        # self.min_followers = None   # 35
-        # self.min_following = None   # 27
-        # self.max_posts = None
-        # self.min_posts = None
-
-        # self.quotient_breach = False
         self.jumps = {
             "consequent": {"likes": 0, "comments": 0, "follows": 0, "unfollows": 0},
             "limit": {"likes": 7, "comments": 3, "follows": 5, "unfollows": 4}
@@ -414,6 +396,7 @@ class TwitterPy:
                 sleep(delay_random)
                 break
             except Exception as e:
+                self.logger.error(e)
                 self.logger.info("Still not visible, scrolling down further")
 
     def retweet_latest_from_profile(self, sleep_delay=2):
@@ -453,6 +436,7 @@ class TwitterPy:
                 sleep(delay_random)
                 break
             except Exception as e:
+                self.logger.error(e)
                 self.logger.info("Still not visible, scrolling down further")
 
     def search_and_retweet(self, query, sleep_delay=2):
@@ -539,17 +523,15 @@ class TwitterPy:
                 sleep(delay_random)
 
                 if button_old_text == button.text.strip():
-                    failed = failed + 1
-                    self.logger.info('Failed {} times'.format(failed))
+                    return False
                 else:
-                    # unfollowed = unfollowed + 1
                     self.logger.info('Button changed to {}'.format(button.text))
                     return True
             else:
                 self.logger.info('Already {}'.format(button.text))
-            return False
         except Exception as e:
             self.logger.error(e)
+        return False
 
     def unfollow_users(self, skip=10, amount=20, sleep_delay=2):
         try:
@@ -581,9 +563,14 @@ class TwitterPy:
             for profilelink in profilelinks:
                 if self.visit_and_unfollow(profilelink):
                     unfollowed = unfollowed + 1
+                else:
+                    failed = failed + 1
                 self.logger.info('unfollowed in this iteration till now: {}'.format(unfollowed))
                 if unfollowed > amount:
                     self.logger.info('Unfollowed too many times this hour. Returning')
+                    return
+                if failed > 6:
+                    self.logger.info('failed too many ({}) times. Returning'.format(failed))
                     return
         except Exception as e:
             self.logger.error(e)
@@ -855,7 +842,7 @@ def smart_run(session):
         if session.login():
             yield
         else:
-            self.logger.info("Not proceeding as login failed")
+            print("Not proceeding as login failed")
 
     except (Exception, KeyboardInterrupt) as exc:
         if isinstance(exc, NoSuchElementException):
@@ -864,7 +851,7 @@ def smart_run(session):
             file_path = os.path.join(gettempdir(), log_file)
             with open(file_path, "wb") as fp:
                 fp.write(session.browser.page_source.encode("utf-8"))
-            self.logger.info("{0}\nIf raising an issue, "
+            print("{0}\nIf raising an issue, "
                   "please also upload the file located at:\n{1}\n{0}"
                   .format('*' * 70, file_path))
 

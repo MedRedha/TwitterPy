@@ -65,7 +65,4 @@ class Settings:
 
     DATABASE_LOCATION = localize_path("TwitterPy", "db", "twitterpy.db")
 
-    # followers_count_xpath = '//a[@name="Followers"]/span[2]'
-    # following_count_xpath = '//a[@name="Following"]/span[2]'
-
 
