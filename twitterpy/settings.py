@@ -17,7 +17,7 @@ class Settings:
 
     # locations
     log_location = localize_path("TwitterPy", "logs")
-    database_location = localize_path("db", "twitterpy.db")
+    database_location = localize_path("TwitterPy/db", "twitterpy.db")
     OS_ENV = ("windows" if platform == "win32"
         else "osx" if platform == "darwin"
         else "linux")
