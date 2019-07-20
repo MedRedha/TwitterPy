@@ -185,8 +185,11 @@ def format_number(number):
 
 def get_relationship_counts(browser, username, logger):
     web_address_navigator(Settings, browser, "https://twitter.com/" + username)
-    followers = browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div:nth-child(1) > div > div:nth-child(5) > div:nth-child(2) > a > span > span")
-    following = browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div:nth-child(1) > div > div:nth-child(5) > div:nth-child(1) > a > span > span")
+    try:
+        followers = browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div > div:nth-child(1) > div > div:nth-child(5) > div:nth-child(2) > a > span > span")
+        following = browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div > div:nth-child(1) > div > div:nth-child(5) > div:nth-child(1) > a > span > span")
+    except Exception as e:
+        logger.error(e)
     return format_number(followers.text), format_number(following.text)
 
 def web_address_navigator(Settings, browser, link):

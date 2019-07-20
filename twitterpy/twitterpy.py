@@ -484,8 +484,16 @@ class TwitterPy:
     def visit_and_unfollow(self, profilelink, sleep_delay=2):
         try:
             web_address_navigator(Settings, self.browser,profilelink)
-            self.logger.info('Visiting {}'.format(profilelink))
-            button = self.browser.find_element_by_css_selector("div > div > div > div > div > div > div > div > div:nth-child(1) > div > div > div > div > div > div > div > span")
+            self.logger.info('Visiting to unfollow: {}'.format(profilelink))
+            try:
+                button = self.browser.find_element_by_css_selector("div > div > div > div > div > div > div > div > div:nth-child(1) > div > div > div > div > div > div > div > span")
+                if button.text.strip()=='':
+                    raise Exception()
+            except Exception as e:
+                button = self.browser.find_element_by_css_selector("div > div > div > main > div > div > div > div > div > div > div > div > div > div:nth-child(1) > div > div > div > div:nth-child(3) > div > div > div > span > span")
+                if button.text.strip()=='':
+                    return False
+
             if button.text.strip()=='Following':
                 self.logger.info('Clicking {}'.format(button.text))
                 button_old_text = button.text.strip()
@@ -539,7 +547,7 @@ class TwitterPy:
             failed = 0
             web_address_navigator(Settings, self.browser, "https://twitter.com/" + self.username + "/following")
             rows = []
-            self.logger.info('Browsing followings of {}'.format(self.username))
+            self.logger.info('Collecting followings of {} which are to be unfollowed'.format(self.username))
             delay_random = random.randint(
                         ceil(sleep_delay * 0.85),
                         ceil(sleep_delay * 1.14))
@@ -552,13 +560,18 @@ class TwitterPy:
             sleep(delay_random)
             rows = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")
             self.logger.info("row {} - {} to be Collected".format(skip, skip+len(rows)))
+
             profilelinks = []
             for i in range(0, len(rows)):
-                profilelink_tag = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > a")
-                profilelink = profilelink_tag.get_attribute("href")
-                self.logger.info("Collected => {}".format(profilelink))
-                sleep(delay_random*0.06)
-                profilelinks.append(profilelink)
+                try:
+                    profilelink_tag = self.browser.find_elements_by_css_selector("div > div > div > main > div > div > div > div > div > div > div:nth-child(2) > section > div > div > div > div")[i].find_element_by_css_selector("div > a")
+                    profilelink = profilelink_tag.get_attribute("href")
+                    self.logger.info("Collected => {}".format(profilelink))
+                    sleep(delay_random*0.06)
+                    profilelinks.append(profilelink)
+                except Exception as e:
+                    self.logger.error(e)
+            self.logger.info("{} links Collected to unfollow".format(len(profilelinks)))
 
             for profilelink in profilelinks:
                 if self.visit_and_unfollow(profilelink):
